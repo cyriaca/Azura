@@ -1,6 +1,7 @@
 // ReSharper disable CheckNamespace
 // ReSharper disable InconsistentNaming
 
+using System;
 using System.IO;
 using System.Text;
 using static System.Buffers.ArrayPool<byte>;
@@ -50,5 +51,28 @@ public static class stringSerialization
         {
             Shared.Return(buf);
         }
+    }
+
+    /// <summary>
+    /// Deserializes an array of unsigned 32-bit integers.
+    /// </summary>
+    /// <param name="stream">Stream to read from.</param>
+    /// <param name="count">Element count.</param>
+    /// <returns>Value.</returns>
+    public static uint[] DeserializeArray(Stream stream, int count)
+    {
+        uint[] res = new uint[count];
+        stream.ReadSpan<uint>(res, count, true);
+        return res;
+    }
+
+    /// <summary>
+    /// Serializes an array of unsigned 32-bit integers.
+    /// </summary>
+    /// <param name="self">Value.</param>
+    /// <param name="stream">Stream to write to.</param>
+    public static void Serialize(this ReadOnlySpan<uint> self, Stream stream)
+    {
+        stream.WriteSpan(self, self.Length, true);
     }
 }

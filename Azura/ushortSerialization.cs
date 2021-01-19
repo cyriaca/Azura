@@ -1,6 +1,7 @@
 // ReSharper disable CheckNamespace
 // ReSharper disable InconsistentNaming
 
+using System;
 using System.Buffers.Binary;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -33,5 +34,28 @@ public static class ushortSerialization
         if (SerializationInternals._swap) self = BinaryPrimitives.ReverseEndianness(self);
         MemoryMarshal.Write(SerializationInternals.IoBuffer, ref self);
         stream.Write(SerializationInternals.IoBuffer, 0, sizeof(ushort));
+    }
+
+    /// <summary>
+    /// Deserializes an array of unsigned 16-bit integers.
+    /// </summary>
+    /// <param name="stream">Stream to read from.</param>
+    /// <param name="count">Element count.</param>
+    /// <returns>Value.</returns>
+    public static ushort[] DeserializeArray(Stream stream, int count)
+    {
+        ushort[] res = new ushort[count];
+        stream.ReadSpan<ushort>(res, count, true);
+        return res;
+    }
+
+    /// <summary>
+    /// Serializes an array of unsigned 16-bit integers.
+    /// </summary>
+    /// <param name="self">Value.</param>
+    /// <param name="stream">Stream to write to.</param>
+    public static void SerializeArray(this ReadOnlySpan<ushort> self, Stream stream)
+    {
+        stream.WriteSpan(self, self.Length, true);
     }
 }

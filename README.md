@@ -69,8 +69,4 @@ type's namespace named `<ClassName>Serialization`.
 ```csharp
 public static T Deserialize(Stream stream);
 public static void Serialize(this T self, Stream stream);
-public static T[] DeserializeArray(Stream stream, int count);
-public static void Serialize(this ReadOnlySpan<T> self, Stream stream);
-public static T?[] DeserializeArrayNullable(Stream stream, int count);
-public static void SerializeNullable(this ReadOnlySpan<T?> self, Stream stream);
 ```

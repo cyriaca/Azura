@@ -1,6 +1,7 @@
 // ReSharper disable CheckNamespace
 // ReSharper disable InconsistentNaming
 
+using System;
 using System.IO;
 using System.Runtime.InteropServices;
 
@@ -28,5 +29,28 @@ public static class floatSerialization
     {
         MemoryMarshal.Write(SerializationInternals.IoBuffer, ref self);
         stream.Write(SerializationInternals.IoBuffer, 0, sizeof(long));
+    }
+
+    /// <summary>
+    /// Deserializes an array of 32-bit floating-point values.
+    /// </summary>
+    /// <param name="stream">Stream to read from.</param>
+    /// <param name="count">Element count.</param>
+    /// <returns>Value.</returns>
+    public static float[] DeserializeArray(Stream stream, int count)
+    {
+        float[] res = new float[count];
+        stream.ReadSpan<float>(res, count, false);
+        return res;
+    }
+
+    /// <summary>
+    /// Serializes an array of 32-bit floating-point values.
+    /// </summary>
+    /// <param name="self">Value.</param>
+    /// <param name="stream">Stream to write to.</param>
+    public static void SerializeArray(this ReadOnlySpan<float> self, Stream stream)
+    {
+        stream.WriteSpan(self, self.Length, false);
     }
 }

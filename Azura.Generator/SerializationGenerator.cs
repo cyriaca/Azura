@@ -68,13 +68,17 @@ namespace {namespaceName}
                     if (isArray) symbol = symbol.TrimEnd('?').TrimEnd('[', ']');
                     symbol = symbol.TrimEnd('?');
 
-                    sb.Append(isArray
-                        ? elementNullable
-                            ? elementValueType
-                                ? $"SerializationBase.DeserializeArrayValueNullable<{symbol}>(stream, intSerialization.Deserialize(stream), {symbol}Serialization.Deserialize),"
-                                : $"SerializationBase.DeserializeArrayNullable<{symbol}>(stream, intSerialization.Deserialize(stream), {symbol}Serialization.Deserialize),"
-                            : $"SerializationBase.DeserializeArray<{symbol}>(stream, intSerialization.Deserialize(stream), {symbol}Serialization.Deserialize),"
-                        : $"{symbol}Serialization.Deserialize(stream),");
+                    if (isArray && !elementNullable && _primitives.Contains(symbol))
+                        sb.Append(
+                            $"{symbol}Serialization.DeserializeArray(stream, intSerialization.Deserialize(stream)),");
+                    else
+                        sb.Append(isArray
+                            ? elementNullable
+                                ? elementValueType
+                                    ? $"SerializationBase.DeserializeArrayValueNullable<{symbol}>(stream, intSerialization.Deserialize(stream), {symbol}Serialization.Deserialize),"
+                                    : $"SerializationBase.DeserializeArrayNullable<{symbol}>(stream, intSerialization.Deserialize(stream), {symbol}Serialization.Deserialize),"
+                                : $"SerializationBase.DeserializeArray<{symbol}>(stream, intSerialization.Deserialize(stream), {symbol}Serialization.Deserialize),"
+                            : $"{symbol}Serialization.Deserialize(stream),");
                 }
 
                 sb.Append(@$"
@@ -101,13 +105,17 @@ namespace {namespaceName}
                         string symbol = $"{sem.GetSymbolInfo(element.Type).Symbol}";
                         if (isArray) symbol = symbol.TrimEnd('?').TrimEnd('[', ']');
                         symbol = symbol.TrimEnd('?');
-                        sb.Append(elementNullable
-                            ? elementValueType
-                                ? @$"
+                        if (isArray && !elementNullable && _primitives.Contains(symbol))
+                            sb.Append(@$"
+            {symbol}Serialization.SerializeArray(self.{element.Name}, stream);");
+                        else
+                            sb.Append(elementNullable
+                                ? elementValueType
+                                    ? @$"
             SerializationBase.SerializeArrayValueNullable<{symbol}>(self.{element.Name}, stream, {symbol}Serialization.Serialize);"
-                                : @$"
+                                    : @$"
             SerializationBase.SerializeArrayNullable<{symbol}>(self.{element.Name}, stream, {symbol}Serialization.Serialize);"
-                            : @$"
+                                : @$"
             SerializationBase.SerializeArray<{symbol}>(self.{element.Name}, stream, {symbol}Serialization.Serialize);");
                         if (selfNullable)
                             sb.Append(@"
@@ -130,6 +138,20 @@ namespace {namespaceName}
                 context.AddSource($"{name}Serialization.cs", sb.ToString());
             }
         }
+
+        private static readonly HashSet<string> _primitives = new()
+        {
+            "byte",
+            "sbyte",
+            "ushort",
+            "short",
+            "uint",
+            "int",
+            "ulong",
+            "long",
+            "float",
+            "double"
+        };
 
         private static void GetInfo(SemanticModel semanticModel, TypeSyntax typeSyntax,
             out bool selfNullable, out bool isArray, out bool elementNullable, out bool elementValueType)

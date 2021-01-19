@@ -1,6 +1,7 @@
 // ReSharper disable CheckNamespace
 // ReSharper disable InconsistentNaming
 
+using System;
 using System.IO;
 
 /// <summary>
@@ -27,5 +28,28 @@ public static class byteSerialization
     {
         SerializationInternals.IoBuffer[0] = self;
         stream.Write(SerializationInternals.IoBuffer, 0, sizeof(byte));
+    }
+
+    /// <summary>
+    /// Deserializes an array of unsigned 8-bit integers.
+    /// </summary>
+    /// <param name="stream">Stream to read from.</param>
+    /// <param name="count">Element count.</param>
+    /// <returns>Value.</returns>
+    public static byte[] DeserializeArray(Stream stream, int count)
+    {
+        byte[] res = new byte[count];
+        stream.ReadSpan<byte>(res, count, true);
+        return res;
+    }
+
+    /// <summary>
+    /// Serializes an array of unsigned 8-bit integers.
+    /// </summary>
+    /// <param name="self">Value.</param>
+    /// <param name="stream">Stream to write to.</param>
+    public static void SerializeArray(this ReadOnlySpan<byte> self, Stream stream)
+    {
+        stream.WriteSpan(self, self.Length, true);
     }
 }
