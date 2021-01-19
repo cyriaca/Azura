@@ -1,0 +1,48 @@
+using System;
+
+namespace Azura.TestBase
+{
+    [Azura]
+    public class TestClass : IEquatable<TestClass>
+    {
+        [Azura] public int IntValue { get; init; }
+        [Azura] public string StringValue { get; init; }
+
+        public bool Equals(TestClass other)
+        {
+            if (ReferenceEquals(null, other))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            return IntValue == other.IntValue && StringValue == other.StringValue;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+
+            if (obj.GetType() != GetType())
+            {
+                return false;
+            }
+
+            return Equals((TestClass)obj);
+        }
+
+        public override int GetHashCode() => HashCode.Combine(IntValue, StringValue);
+    }
+}
