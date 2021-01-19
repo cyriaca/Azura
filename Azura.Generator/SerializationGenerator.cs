@@ -58,17 +58,22 @@ namespace {namespaceName}
             return new {name} {{");
                 foreach (var element in elements)
                 {
-                    string symbol = $"{sem.GetSymbolInfo(element.Type).Symbol}";
                     sb.Append(@$"
                 {element.Name} = ");
-                    GetInfo(sem, element.Type, out bool selfNullable, out bool isArray, out bool elementNullable);
+                    GetInfo(sem, element.Type, out bool selfNullable, out bool isArray, out bool elementNullable,
+                        out bool elementValueType);
                     if (selfNullable)
                         sb.Append("byteSerialization.Deserialize(stream) == 0 ? null : ");
-                    symbol = symbol.Replace("?", "");
+                    string symbol = $"{sem.GetSymbolInfo(element.Type).Symbol}";
+                    if (isArray) symbol = symbol.TrimEnd('?').TrimEnd('[', ']');
+                    symbol = symbol.TrimEnd('?');
+
                     sb.Append(isArray
                         ? elementNullable
-                            ? $"{symbol.Substring(0, symbol.Length - 2)}Serialization.DeserializeArrayNullable(stream, intSerialization.Deserialize(stream)),"
-                            : $"{symbol.Substring(0, symbol.Length - 2)}Serialization.DeserializeArray(stream, intSerialization.Deserialize(stream)),"
+                            ? elementValueType
+                                ? $"SerializationBase.DeserializeArrayValueNullable<{symbol}>(stream, intSerialization.Deserialize(stream), {symbol}Serialization.Deserialize),"
+                                : $"SerializationBase.DeserializeArrayNullable<{symbol}>(stream, intSerialization.Deserialize(stream), {symbol}Serialization.Deserialize),"
+                            : $"SerializationBase.DeserializeArray<{symbol}>(stream, intSerialization.Deserialize(stream), {symbol}Serialization.Deserialize),"
                         : $"{symbol}Serialization.Deserialize(stream),");
                 }
 
@@ -80,7 +85,8 @@ namespace {namespaceName}
         {{");
                 foreach (var element in elements)
                 {
-                    GetInfo(sem, element.Type, out bool selfNullable, out bool isArray, out bool elementNullable);
+                    GetInfo(sem, element.Type, out bool selfNullable, out bool isArray, out bool elementNullable,
+                        out bool elementValueType);
                     if (selfNullable)
                         sb.Append($@"
             (self.{element.Name} != default ? (byte)1 : (byte)0).Serialize(stream);");
@@ -92,11 +98,17 @@ namespace {namespaceName}
             {{");
                         sb.Append(@$"
             self.{element.Name}.Length.Serialize(stream);");
+                        string symbol = $"{sem.GetSymbolInfo(element.Type).Symbol}";
+                        if (isArray) symbol = symbol.TrimEnd('?').TrimEnd('[', ']');
+                        symbol = symbol.TrimEnd('?');
                         sb.Append(elementNullable
-                            ? @$"
-            self.{element.Name}.AsSpan().SerializeNullable(stream);"
+                            ? elementValueType
+                                ? @$"
+            SerializationBase.SerializeArrayValueNullable<{symbol}>(self.{element.Name}, stream, {symbol}Serialization.Serialize);"
+                                : @$"
+            SerializationBase.SerializeArrayNullable<{symbol}>(self.{element.Name}, stream, {symbol}Serialization.Serialize);"
                             : @$"
-            self.{element.Name}.AsSpan().Serialize(stream);");
+            SerializationBase.SerializeArray<{symbol}>(self.{element.Name}, stream, {symbol}Serialization.Serialize);");
                         if (selfNullable)
                             sb.Append(@"
             }");
@@ -109,85 +121,9 @@ namespace {namespaceName}
                 self.{element.Name}.Serialize(stream);");
                 }
 
-                sb.Append(@$"
-        }}
-
-        public static {id}[] DeserializeArray(Stream stream, int count)
-        {{
-            {id}[] res = new {id}[count];
-            for (int i = 0; i < count; i++) res[i] = Deserialize(stream);
-            return res;
-        }}
-
-        public static void Serialize(this Span<{id}> self, Stream stream)
-        {{
-            for (int i = 0; i < self.Length; i++) self[i].Serialize(stream);
-        }}
-
-        public static void Serialize(this ReadOnlySpan<{id}> self, Stream stream)
-        {{
-            for (int i = 0; i < self.Length; i++) self[i].Serialize(stream);
-        }}");
-                if (item.Type is StructDeclarationSyntax)
-                    sb.Append(@$"
-
-        public static {id}?[] DeserializeArrayNullable(Stream stream, int count)
-        {{
-            {id}?[] res = new {id}?[count];
-            for (int i = 0; i < count; i++)
-            {{
-                if (byteSerialization.Deserialize(stream) != 0)
-                    res[i] = Deserialize(stream);
-            }}
-            return res;
-        }}
-
-        public static void SerializeNullable(this Span<{id}?> self, Stream stream)
-        {{
-            for (int i = 0; i < self.Length; i++) {{
-                (self[i].HasValue ? (byte)1 : (byte)0).Serialize(stream);
-                self[i]?.Serialize(stream);
-            }}
-        }}
-
-        public static void SerializeNullable(this ReadOnlySpan<{id}?> self, Stream stream)
-        {{
-            for (int i = 0; i < self.Length; i++) {{
-                (self[i].HasValue ? (byte)1 : (byte)0).Serialize(stream);
-                self[i]?.Serialize(stream);
-            }}
-        }}
-    }}");
-                else
-                    sb.Append(@$"
-
-        public static {id}[] DeserializeArrayNullable(Stream stream, int count)
-        {{
-            {id}[] res = new {id}[count];
-            for (int i = 0; i < count; i++)
-            {{
-                if (byteSerialization.Deserialize(stream) != 0)
-                    res[i] = Deserialize(stream);
-            }}
-            return res;
-        }}
-
-        public static void SerializeNullable(this Span<{id}> self, Stream stream)
-        {{
-            for (int i = 0; i < self.Length; i++) {{
-                (self[i] != default ? (byte)1 : (byte)0).Serialize(stream);
-                self[i]?.Serialize(stream);
-            }}
-        }}
-
-        public static void SerializeNullable(this ReadOnlySpan<{id}> self, Stream stream)
-        {{
-            for (int i = 0; i < self.Length; i++) {{
-                (self[i] != default ? (byte)1 : (byte)0).Serialize(stream);
-                self[i]?.Serialize(stream);
-            }}
-        }}
-    }}");
+                sb.Append(@"
+        }
+    }");
                 if (namespaceName != null)
                     sb.Append(@"
 }");
@@ -196,7 +132,7 @@ namespace {namespaceName}
         }
 
         private static void GetInfo(SemanticModel semanticModel, TypeSyntax typeSyntax,
-            out bool selfNullable, out bool isArray, out bool elementNullable)
+            out bool selfNullable, out bool isArray, out bool elementNullable, out bool elementValueType)
         {
             var info = semanticModel.GetTypeInfo(typeSyntax);
             selfNullable = typeSyntax is NullableTypeSyntax ||
@@ -204,6 +140,7 @@ namespace {namespaceName}
             isArray = info.Type!.TypeKind == TypeKind.Array;
             elementNullable = isArray && (info.Type as IArrayTypeSymbol)!.ElementType.NullableAnnotation ==
                 NullableAnnotation.Annotated;
+            elementValueType = isArray && (info.Type as IArrayTypeSymbol)!.ElementType.IsValueType;
         }
 
         private class ForSerializationSyntaxReceiver : ISyntaxReceiver

@@ -59,7 +59,8 @@ namespace Azura.Tests
             // Class with array
             string[] arr = {"jj", "yy"};
             TestStruct?[] arr2 = {new TestStruct {LongValue = 0}, null};
-            var ta = new TestClassWithArray {StringArrayValue = arr, StructArrayValue2 = arr2};
+            int?[] arr3 = {3, null};
+            var ta = new TestClassWithArray {StringArrayValue = arr, StructArrayValue2 = arr2, IntArrayValue = arr3};
             ta.Serialize(_ms);
             _ms.Position = 0;
             var resTa = TestClassWithArraySerialization.Deserialize(_ms);
@@ -67,6 +68,7 @@ namespace Azura.Tests
             Assert.AreEqual(arr, resTa.StringArrayValue);
             Assert.AreEqual(null, resTa.StructArrayValue);
             Assert.AreEqual(arr2, resTa.StructArrayValue2);
+            Assert.AreEqual(arr3, resTa.IntArrayValue);
             _ms.SetLength(0);
         }
     }
