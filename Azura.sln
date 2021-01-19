@@ -5,7 +5,7 @@ VisualStudioVersion = 15.0.26124.0
 MinimumVisualStudioVersion = 15.0.26124.0
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Azura", "Azura\Azura.csproj", "{274CBCA3-3A90-47FC-BB65-29F359A01F51}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Azura.Sourcegen", "Azura.Sourcegen\Azura.Sourcegen.csproj", "{F768FAEE-C460-4504-BE70-6E05C9783E70}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Azura.Generator", "Azura.Generator\Azura.Generator.csproj", "{F768FAEE-C460-4504-BE70-6E05C9783E70}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Azura.Tests", "Azura.Tests\Azura.Tests.csproj", "{CBD3E026-CE32-4BC1-9B08-5BC214AE2C95}"
 EndProject

@@ -58,7 +58,7 @@ namespace Azura.Tests
 
             // Class with array
             string[] arr = {"jj", "yy"};
-            TestStruct?[] arr2 = {new TestStruct{LongValue = 0}, null};
+            TestStruct?[] arr2 = {new TestStruct {LongValue = 0}, null};
             var ta = new TestClassWithArray {StringArrayValue = arr, StructArrayValue2 = arr2};
             ta.Serialize(_ms);
             _ms.Position = 0;

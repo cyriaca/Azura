@@ -1,14 +1,32 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0;net5.0</TargetFrameworks>
     <Nullable>enable</Nullable>
     <LangVersion>9</LangVersion>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
-  <ItemGroup>
+  <PropertyGroup>
+    <PackageVersion>0.1.0</PackageVersion>
+    <AssemblyVersion>1.0.0</AssemblyVersion>
+
+    <Description>Serializers for common types and serialization attribute</Description>
+
+    <Owners>Lucina</Owners>
+    <Authors>Lucina</Authors>
+    <Company>teamRokuro</Company>
+    <Copyright>Copyright ©2020 teamRokuro</Copyright>
+    <PackageProjectUrl>https://github.com/Lucina/Azura</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/Lucina/Azura</RepositoryUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)'!='net5.0'">
     <PackageReference Include="System.Memory" Version="4.5.4" />
   </ItemGroup>
 </Project>

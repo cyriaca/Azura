@@ -4,7 +4,7 @@ using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Azura.Sourcegen
+namespace Azura.Generator
 {
     [Generator]
     public class SerializationGenerator : ISourceGenerator
@@ -30,7 +30,7 @@ namespace Azura.Sourcegen
                     context.ReportDiagnostic(Diagnostic.Create(
                         new DiagnosticDescriptor("CT0001", "Serialized type cannot be a nested type",
                             $"The Azura library does not support generating serialization sources for nested types (failed on {name}). Please move the type to a namespace's scope.",
-                            "Azura.Sourcegen", DiagnosticSeverity.Error, true), null));
+                            "Azura.Generator", DiagnosticSeverity.Error, true), null));
                     continue;
                 }
 

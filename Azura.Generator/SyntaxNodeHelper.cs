@@ -2,7 +2,7 @@ using System.IO;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Azura.Sourcegen
+namespace Azura.Generator
 {
     // https://stackoverflow.com/a/23249021 + nullable + convenience
     internal static class SyntaxNodeHelper
