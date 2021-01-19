@@ -43,6 +43,7 @@ namespace Azura.Sourcegen
                     "Azura.AzuraAttribute");
                 var sb = new StringBuilder(@"
 #pragma warning disable 1591
+#nullable enable
 using System;
 using System.IO;");
                 if (namespaceName != null)
@@ -58,11 +59,17 @@ namespace {namespaceName}
                 foreach (var element in elements)
                 {
                     string symbol = $"{sem.GetSymbolInfo(element.Type).Symbol}";
-                    sb.Append(symbol.EndsWith("]")
-                        ? @$"
-                {element.Name} = {symbol.Substring(0, symbol.Length - 2)}Serialization.DeserializeArray(stream, intSerialization.Deserialize(stream)),"
-                        : @$"
-                {element.Name} = {symbol}Serialization.Deserialize(stream),");
+                    sb.Append(@$"
+                {element.Name} = ");
+                    GetInfo(sem, element.Type, out bool selfNullable, out bool isArray, out bool elementNullable);
+                    if (selfNullable)
+                        sb.Append("byteSerialization.Deserialize(stream) == 0 ? null : ");
+                    symbol = symbol.Replace("?", "");
+                    sb.Append(isArray
+                        ? elementNullable
+                            ? $"{symbol.Substring(0, symbol.Length - 2)}Serialization.DeserializeArrayNullable(stream, intSerialization.Deserialize(stream)),"
+                            : $"{symbol.Substring(0, symbol.Length - 2)}Serialization.DeserializeArray(stream, intSerialization.Deserialize(stream)),"
+                        : $"{symbol}Serialization.Deserialize(stream),");
                 }
 
                 sb.Append(@$"
@@ -73,17 +80,33 @@ namespace {namespaceName}
         {{");
                 foreach (var element in elements)
                 {
-                    string symbol = $"{sem.GetSymbolInfo(element.Type).Symbol}";
-                    if (symbol.EndsWith("[]"))
+                    GetInfo(sem, element.Type, out bool selfNullable, out bool isArray, out bool elementNullable);
+                    if (selfNullable)
+                        sb.Append($@"
+            (self.{element.Name} != default ? (byte)1 : (byte)0).Serialize(stream);");
+                    if (isArray)
                     {
+                        if (selfNullable)
+                            sb.Append(@$"
+            if(self.{element.Name} != default)
+            {{");
                         sb.Append(@$"
             self.{element.Name}.Length.Serialize(stream);");
-                        sb.Append(@$"
+                        sb.Append(elementNullable
+                            ? @$"
+            self.{element.Name}.AsSpan().SerializeNullable(stream);"
+                            : @$"
             self.{element.Name}.AsSpan().Serialize(stream);");
+                        if (selfNullable)
+                            sb.Append(@"
+            }");
                     }
                     else
-                        sb.Append(@$"
-            self.{element.Name}.Serialize(stream);");
+                        sb.Append(selfNullable
+                            ? @$"
+                self.{element.Name}?.Serialize(stream);"
+                            : @$"
+                self.{element.Name}.Serialize(stream);");
                 }
 
                 sb.Append(@$"
@@ -104,6 +127,65 @@ namespace {namespaceName}
         public static void Serialize(this ReadOnlySpan<{id}> self, Stream stream)
         {{
             for (int i = 0; i < self.Length; i++) self[i].Serialize(stream);
+        }}");
+                if (item.Type is StructDeclarationSyntax)
+                    sb.Append(@$"
+
+        public static {id}?[] DeserializeArrayNullable(Stream stream, int count)
+        {{
+            {id}?[] res = new {id}?[count];
+            for (int i = 0; i < count; i++)
+            {{
+                if (byteSerialization.Deserialize(stream) != 0)
+                    res[i] = Deserialize(stream);
+            }}
+            return res;
+        }}
+
+        public static void SerializeNullable(this Span<{id}?> self, Stream stream)
+        {{
+            for (int i = 0; i < self.Length; i++) {{
+                (self[i].HasValue ? (byte)1 : (byte)0).Serialize(stream);
+                self[i]?.Serialize(stream);
+            }}
+        }}
+
+        public static void SerializeNullable(this ReadOnlySpan<{id}?> self, Stream stream)
+        {{
+            for (int i = 0; i < self.Length; i++) {{
+                (self[i].HasValue ? (byte)1 : (byte)0).Serialize(stream);
+                self[i]?.Serialize(stream);
+            }}
+        }}
+    }}");
+                else
+                    sb.Append(@$"
+
+        public static {id}[] DeserializeArrayNullable(Stream stream, int count)
+        {{
+            {id}[] res = new {id}[count];
+            for (int i = 0; i < count; i++)
+            {{
+                if (byteSerialization.Deserialize(stream) != 0)
+                    res[i] = Deserialize(stream);
+            }}
+            return res;
+        }}
+
+        public static void SerializeNullable(this Span<{id}> self, Stream stream)
+        {{
+            for (int i = 0; i < self.Length; i++) {{
+                (self[i] != default ? (byte)1 : (byte)0).Serialize(stream);
+                self[i]?.Serialize(stream);
+            }}
+        }}
+
+        public static void SerializeNullable(this ReadOnlySpan<{id}> self, Stream stream)
+        {{
+            for (int i = 0; i < self.Length; i++) {{
+                (self[i] != default ? (byte)1 : (byte)0).Serialize(stream);
+                self[i]?.Serialize(stream);
+            }}
         }}
     }}");
                 if (namespaceName != null)
@@ -111,6 +193,17 @@ namespace {namespaceName}
 }");
                 context.AddSource($"{name}Serialization.cs", sb.ToString());
             }
+        }
+
+        private static void GetInfo(SemanticModel semanticModel, TypeSyntax typeSyntax,
+            out bool selfNullable, out bool isArray, out bool elementNullable)
+        {
+            var info = semanticModel.GetTypeInfo(typeSyntax);
+            selfNullable = typeSyntax is NullableTypeSyntax ||
+                           info.Type!.NullableAnnotation == NullableAnnotation.Annotated;
+            isArray = info.Type!.TypeKind == TypeKind.Array;
+            elementNullable = isArray && (info.Type as IArrayTypeSymbol)!.ElementType.NullableAnnotation ==
+                NullableAnnotation.Annotated;
         }
 
         private class ForSerializationSyntaxReceiver : ISyntaxReceiver

@@ -6,10 +6,9 @@ namespace Azura.TestBase
     public class TestClass : IEquatable<TestClass>
     {
         [Azura] public int IntValue { get; init; }
-        [Azura] public string StringValue { get; init; }
+        [Azura] public string? StringValue { get; init; }
 
-        public bool Equals(TestClass other)
-        {
+        public bool Equals(TestClass? other) {
             if (ReferenceEquals(null, other))
             {
                 return false;
@@ -23,8 +22,7 @@ namespace Azura.TestBase
             return IntValue == other.IntValue && StringValue == other.StringValue;
         }
 
-        public override bool Equals(object obj)
-        {
+        public override bool Equals(object? obj) {
             if (ReferenceEquals(null, obj))
             {
                 return false;
@@ -35,12 +33,12 @@ namespace Azura.TestBase
                 return true;
             }
 
-            if (obj.GetType() != GetType())
+            if (obj.GetType() != this.GetType())
             {
                 return false;
             }
 
-            return Equals((TestClass)obj);
+            return Equals((TestClass) obj);
         }
 
         public override int GetHashCode() => HashCode.Combine(IntValue, StringValue);

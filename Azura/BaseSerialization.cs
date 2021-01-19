@@ -968,4 +968,56 @@ public static class stringSerialization
     {
         for (int i = 0; i < self.Length; i++) self[i].Serialize(stream);
     }
+
+    /// <summary>
+    /// Deserializes an array of strings.
+    /// </summary>
+    /// <param name="stream">Stream to read from.</param>
+    /// <param name="count">Element count.</param>
+    /// <returns>Value.</returns>
+    public static string?[] DeserializeArrayNullable(Stream stream, int count)
+    {
+        {
+            string?[] res = new string?[count];
+            for (int i = 0; i < count; i++)
+            {
+                {
+                    if (byteSerialization.Deserialize(stream) != 0)
+                        res[i] = Deserialize(stream);
+                }
+            }
+
+            return res;
+        }
+    }
+
+    /// <summary>
+    /// Serializes an array of strings.
+    /// </summary>
+    /// <param name="self">Value.</param>
+    /// <param name="stream">Stream to write to.</param>
+    public static void SerializeNullable(this Span<string?> self, Stream stream)
+    {
+        for (int i = 0; i < self.Length; i++)
+        {
+            (self[i] != default ? (byte)1 : (byte)0).Serialize(stream);
+            if (self[i] != default)
+                self[i]!.Serialize(stream);
+        }
+    }
+
+    /// <summary>
+    /// Serializes an array of strings.
+    /// </summary>
+    /// <param name="self">Value.</param>
+    /// <param name="stream">Stream to write to.</param>
+    public static void SerializeNullable(this ReadOnlySpan<string?> self, Stream stream)
+    {
+        for (int i = 0; i < self.Length; i++)
+        {
+            (self[i] != default ? (byte)1 : (byte)0).Serialize(stream);
+            if (self[i] != default)
+                self[i]!.Serialize(stream);
+        }
+    }
 }

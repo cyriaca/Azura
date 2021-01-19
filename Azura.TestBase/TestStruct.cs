@@ -4,6 +4,6 @@ namespace Azura.TestBase
     public struct TestStruct
     {
         [Azura] public long LongValue;
-        [Azura] public ushort UshortValue;
+        [Azura] public ushort? UshortValue;
     }
 }

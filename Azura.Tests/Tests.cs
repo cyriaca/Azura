@@ -23,11 +23,13 @@ namespace Azura.Tests
             tInt.Serialize(_ms);
             _ms.Position = 0;
             Assert.AreEqual(tInt, intSerialization.Deserialize(_ms));
+            Assert.AreEqual(_ms.Length, _ms.Position);
             _ms.SetLength(0);
             string tStr = "saxton hale";
             tStr.Serialize(_ms);
             _ms.Position = 0;
             Assert.AreEqual(tStr, stringSerialization.Deserialize(_ms));
+            Assert.AreEqual(_ms.Length, _ms.Position);
             _ms.SetLength(0);
 
             // Class
@@ -35,6 +37,7 @@ namespace Azura.Tests
             tc.Serialize(_ms);
             _ms.Position = 0;
             Assert.AreEqual(tc, TestClassSerialization.Deserialize(_ms));
+            Assert.AreEqual(_ms.Length, _ms.Position);
             _ms.SetLength(0);
 
             // Record
@@ -42,6 +45,7 @@ namespace Azura.Tests
             tr.Serialize(_ms);
             _ms.Position = 0;
             Assert.AreEqual(tr, TestRecordSerialization.Deserialize(_ms));
+            Assert.AreEqual(_ms.Length, _ms.Position);
             _ms.SetLength(0);
 
             // Struct
@@ -49,14 +53,20 @@ namespace Azura.Tests
             ts.Serialize(_ms);
             _ms.Position = 0;
             Assert.AreEqual(ts, TestStructSerialization.Deserialize(_ms));
+            Assert.AreEqual(_ms.Length, _ms.Position);
             _ms.SetLength(0);
 
             // Class with array
             string[] arr = {"jj", "yy"};
-            var ta = new TestClassWithArray {StringArrayValue = arr};
+            TestStruct?[] arr2 = {new TestStruct{LongValue = 0}, null};
+            var ta = new TestClassWithArray {StringArrayValue = arr, StructArrayValue2 = arr2};
             ta.Serialize(_ms);
             _ms.Position = 0;
-            Assert.AreEqual(arr, TestClassWithArraySerialization.Deserialize(_ms).StringArrayValue);
+            var resTa = TestClassWithArraySerialization.Deserialize(_ms);
+            Assert.AreEqual(_ms.Length, _ms.Position);
+            Assert.AreEqual(arr, resTa.StringArrayValue);
+            Assert.AreEqual(null, resTa.StructArrayValue);
+            Assert.AreEqual(arr2, resTa.StructArrayValue2);
             _ms.SetLength(0);
         }
     }
