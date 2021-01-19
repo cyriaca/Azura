@@ -62,7 +62,7 @@ namespace Azura.Tests
             TestStruct?[] arr2 = {new TestStruct {LongValue = 0}, null};
             int?[] arr3 = {3, null};
             HashSet<int> hs = new() {3, 4, 5};
-            Dictionary<string, int?> korone = new() {{"wang", 1}, {"i am die", 2}, {"thank you forever", null}};
+            Dictionary<string, int?> korone = new() {{"one", 1}, {"i'm die", 2}, {"thank you forever", null}};
             var ta = new TestClassWithArray
             {
                 StringArrayValue = arr,
