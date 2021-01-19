@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace Azura.TestBase
 {
     [Azura]
@@ -8,5 +10,6 @@ namespace Azura.TestBase
         [Azura] public TestStruct?[]? StructArrayValue2 { get; set; }
         [Azura] public int?[]? IntArrayValue { get; set; }
         [Azura] public int[]? IntArrayValue2 { get; set; }
+        [Azura] public HashSet<int>? HashSet { get; set; }
     }
 }

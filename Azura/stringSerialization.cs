@@ -1,7 +1,6 @@
 // ReSharper disable CheckNamespace
 // ReSharper disable InconsistentNaming
 
-using System;
 using System.IO;
 using System.Text;
 using static System.Buffers.ArrayPool<byte>;

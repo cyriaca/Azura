@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.IO;
 using Azura.TestBase;
 using NUnit.Framework;
@@ -60,7 +61,11 @@ namespace Azura.Tests
             string[] arr = {"jj", "yy"};
             TestStruct?[] arr2 = {new TestStruct {LongValue = 0}, null};
             int?[] arr3 = {3, null};
-            var ta = new TestClassWithArray {StringArrayValue = arr, StructArrayValue2 = arr2, IntArrayValue = arr3};
+            HashSet<int> hs = new() {3, 4, 5};
+            var ta = new TestClassWithArray
+            {
+                StringArrayValue = arr, StructArrayValue2 = arr2, IntArrayValue = arr3, HashSet = hs
+            };
             ta.Serialize(_ms);
             _ms.Position = 0;
             var resTa = TestClassWithArraySerialization.Deserialize(_ms);
@@ -69,6 +74,7 @@ namespace Azura.Tests
             Assert.AreEqual(null, resTa.StructArrayValue);
             Assert.AreEqual(arr2, resTa.StructArrayValue2);
             Assert.AreEqual(arr3, resTa.IntArrayValue);
+            Assert.AreEqual(hs, resTa.HashSet);
             _ms.SetLength(0);
         }
     }
