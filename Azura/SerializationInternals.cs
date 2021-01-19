@@ -79,6 +79,22 @@ public static class SerializationInternals
         return IoBuffer;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static Span<byte> ReadBase128(this Stream stream)
+    {
+        int tot = 0;
+        do
+        {
+            int read = stream.Read(IoBuffer, tot, sizeof(decimal) - tot);
+            if (read == 0)
+                throw new EndOfStreamException(
+                    $"Failed to read required number of bytes! 0x{tot:X} read, 0x{sizeof(decimal) - tot:X} left");
+            tot += read;
+        } while (tot < sizeof(decimal));
+
+        return IoBuffer;
+    }
+
     /// <summary>
     /// Read array.
     /// </summary>

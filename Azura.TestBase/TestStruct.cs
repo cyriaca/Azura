@@ -1,3 +1,5 @@
+using System;
+
 namespace Azura.TestBase
 {
     [Azura]
@@ -5,5 +7,6 @@ namespace Azura.TestBase
     {
         [Azura] public long LongValue;
         [Azura] public ushort? UshortValue;
+        [Azura] public Guid? Guid;
     }
 }

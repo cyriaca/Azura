@@ -18,10 +18,10 @@ public static class charSerialization
     /// <param name="stream">Stream to read from.</param>
     /// <returns>Value.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static ushort Deserialize(Stream stream)
+    public static char Deserialize(Stream stream)
     {
         return SerializationInternals._swap
-            ? BinaryPrimitives.ReverseEndianness(
+            ? (char)BinaryPrimitives.ReverseEndianness(
                 MemoryMarshal.Read<char>(stream.ReadBase16()))
             : MemoryMarshal.Read<char>(stream.ReadBase16());
     }

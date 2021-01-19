@@ -248,7 +248,12 @@ namespace {namespaceName}
             "ulong",
             "long",
             "float",
-            "double"
+            "double",
+            "char",
+            "bool",
+            "System.Guid",
+            "System.DateTime",
+            "System.TimeSpan"
         };
 
         private enum MemberKind

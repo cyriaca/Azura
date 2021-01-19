@@ -7,52 +7,52 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 /// <summary>
-/// Provides serialization for 32-bit floating-point values.
+/// Provides serialization for 128-bit fixed-point values.
 /// </summary>
-public static class floatSerialization
+public static class decimalSerialization
 {
     /// <summary>
-    /// Deserializes a 32-bit floating-point value.
+    /// Deserializes a 128-bit fixed-point value.
     /// </summary>
     /// <param name="stream">Stream to read from.</param>
     /// <returns>Value.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static float Deserialize(Stream stream)
+    public static decimal Deserialize(Stream stream)
     {
-        return MemoryMarshal.Read<float>(stream.ReadBase32());
+        return MemoryMarshal.Read<decimal>(stream.ReadBase128());
     }
 
     /// <summary>
-    /// Serializes a 32-bit floating-point value.
+    /// Serializes a 128-bit fixed-point value.
     /// </summary>
     /// <param name="self">Value.</param>
     /// <param name="stream">Stream to write to.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Serialize(this float self, Stream stream)
+    public static void Serialize(this decimal self, Stream stream)
     {
         MemoryMarshal.Write(SerializationInternals.IoBuffer, ref self);
-        stream.Write(SerializationInternals.IoBuffer, 0, sizeof(float));
+        stream.Write(SerializationInternals.IoBuffer, 0, sizeof(decimal));
     }
 
     /// <summary>
-    /// Deserializes an array of 32-bit floating-point values.
+    /// Deserializes an array of 128-bit fixed-point values.
     /// </summary>
     /// <param name="stream">Stream to read from.</param>
     /// <param name="count">Element count.</param>
     /// <returns>Value.</returns>
-    public static float[] DeserializeArray(Stream stream, int count)
+    public static decimal[] DeserializeArray(Stream stream, int count)
     {
-        float[] res = new float[count];
-        stream.ReadSpan<float>(res, count, false);
+        decimal[] res = new decimal[count];
+        stream.ReadSpan<decimal>(res, count, false);
         return res;
     }
 
     /// <summary>
-    /// Serializes an array of 32-bit floating-point values.
+    /// Serializes an array of 128-bit fixed-point values.
     /// </summary>
     /// <param name="self">Value.</param>
     /// <param name="stream">Stream to write to.</param>
-    public static void SerializeArray(this ReadOnlySpan<float> self, Stream stream)
+    public static void SerializeArray(this ReadOnlySpan<decimal> self, Stream stream)
     {
         stream.WriteSpan(self, self.Length, false);
     }

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using Azura.TestBase;
@@ -50,7 +51,7 @@ namespace Azura.Tests
             _ms.SetLength(0);
 
             // Struct
-            var ts = new TestStruct {LongValue = 1010101010101, UshortValue = 66};
+            var ts = new TestStruct {LongValue = 1010101010101, UshortValue = 66, Guid = Guid.NewGuid()};
             ts.Serialize(_ms);
             _ms.Position = 0;
             Assert.AreEqual(ts, TestStructSerialization.Deserialize(_ms));

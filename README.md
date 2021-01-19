@@ -13,7 +13,7 @@
 * Common BCL primitives (and string)
   - `byte` / `sbyte` / `ushort` / `short` / `uint` / `int` / `ulong` / `long`
   - `float` / `double` / `char`
-  - `TimeSpan` / `DateTime`
+  - `Guid` / `TimeSpan` / `DateTime` / `decimal`
   - `string`
 * Common collection types
   - `T[]` / `List<T>` / `HashSet<T>` / `Dictionary<TKey, TValue>`
