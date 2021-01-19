@@ -11,7 +11,7 @@
 * Fields / properties (even init-only) on structs, classes, and records
 * Common BCL types
   - `byte` / `sbyte` / `ushort` / `short` / `uint` / `int` / `ulong` / `long`
-  - `float` / `double` / `char`
+  - `float` / `double` / `char` / `bool`
   - `Guid` / `TimeSpan` / `DateTime` / `decimal`
   - `string`
   - `T[]` / `List<T>` / `HashSet<T>` / `Dictionary<TKey, TValue>`
