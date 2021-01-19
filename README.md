@@ -9,26 +9,25 @@
 
 ## Supported
 
-* Fields / properties (even init-only) of supported types on structs, classes, and records
-* Common BCL primitives (and string)
+* Fields / properties (even init-only) on structs, classes, and records
+* Common BCL types
   - `byte` / `sbyte` / `ushort` / `short` / `uint` / `int` / `ulong` / `long`
   - `float` / `double` / `char`
   - `Guid` / `TimeSpan` / `DateTime` / `decimal`
   - `string`
-* Common collection types
+* Common BCL collection types
   - `T[]` / `List<T>` / `HashSet<T>` / `Dictionary<TKey, TValue>`
 * Nullable types
 
 ## Limitations
 
-* Type must have parameter-less constructor
-* Limited support for BCL types
-* Cannot (currently) serialize nested classes due to namespace
-  - Potential future workaround: use root namespace `Azura`
+* Type must have parameter-less constructor to support serializer generation
+* No support for generic types
+* Cannot (currently) serialize nested classes
 
 ## Usage
 
-0. Add generator library (comes with base package as well)
+0. Add generator library (base package comes with it as well)
 
 ```xml
 <PackageReference Include="Azura.Generator" Version="version" />
@@ -59,6 +58,15 @@ data.Serialize(stream);
 ```csharp
 var data = DataSerialization.Deserialize(stream);
 ```
+
+## Binary format
+
+* Numeric types are little-endian.
+* Primitives are serialized as expected.
+* Nullable types are prefixed with a byte flag.
+* Collections and strings are prefixed with an s32 count followed by
+  elements serialized contiguously (if a supported type parameter is
+  nullable, those values are prefixed with a byte flag).
 
 ## Custom serialization
 
