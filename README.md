@@ -6,7 +6,6 @@
 | `Azura`           | [![NuGet](https://img.shields.io/nuget/v/Azura.svg)](https://www.nuget.org/packages/Azura/)|
 | `Azura.Generator` | [![NuGet](https://img.shields.io/nuget/v/Azura.Generator.svg)](https://www.nuget.org/packages/Azura.Generator/) |
 
-
 ## Supported
 
 * Fields / properties (even init-only) on structs, classes, and records
@@ -27,7 +26,7 @@
 
 ## Usage
 
-0. Add generator library (base package comes with it as well)
+0. Add generator library (includes base package, does not need to be explicitly included)
 
 ```xml
 <PackageReference Include="Azura.Generator" Version="version" />
@@ -36,6 +35,7 @@
 1. Define a data type and mark properties or fields
 
 ```csharp
+using Azura;
 [Azura]
 public record Data
 {
