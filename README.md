@@ -7,14 +7,15 @@
 | `Azura.Generator` | [![NuGet](https://img.shields.io/nuget/v/Azura.Generator.svg)](https://www.nuget.org/packages/Azura.Generator/) |
 
 
-## Features
+## Supported
 
-* Builtin support for common BCL primitives (and string)
+* Fields / properties (even init-only) of supported types on structs, classes, and records
+* Common BCL primitives (and string)
   - `byte` / `sbyte` / `ushort` / `short` / `uint` / `int` / `ulong` / `long`
   - `float` / `double`
   - `string`
-* Supports fields / properties (even init-only) on structs, classes, and records
-* Supports nullable types
+* Arrays of supported types
+* Nullable types
 
 ## Limitations
 
