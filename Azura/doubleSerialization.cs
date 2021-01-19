@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 /// <summary>
@@ -15,6 +16,7 @@ public static class doubleSerialization
     /// </summary>
     /// <param name="stream">Stream to read from.</param>
     /// <returns>Value.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static double Deserialize(Stream stream)
     {
         return MemoryMarshal.Read<double>(stream.ReadBase64());
@@ -25,6 +27,7 @@ public static class doubleSerialization
     /// </summary>
     /// <param name="self">Value.</param>
     /// <param name="stream">Stream to write to.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Serialize(this double self, Stream stream)
     {
         MemoryMarshal.Write(SerializationInternals.IoBuffer, ref self);

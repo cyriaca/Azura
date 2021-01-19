@@ -12,10 +12,11 @@
 * Fields / properties (even init-only) of supported types on structs, classes, and records
 * Common BCL primitives (and string)
   - `byte` / `sbyte` / `ushort` / `short` / `uint` / `int` / `ulong` / `long`
-  - `float` / `double`
+  - `float` / `double` / `char`
+  - `TimeSpan` / `DateTime`
   - `string`
 * Common collection types
-  - `Array` / `List` / `HashSet` / `Dictionary`
+  - `T[]` / `List<T>` / `HashSet<T>` / `Dictionary<TKey, TValue>`
 * Nullable types
 
 ## Limitations

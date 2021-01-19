@@ -46,7 +46,8 @@ namespace Azura.Generator
 #pragma warning disable 1591
 #nullable enable
 using System;
-using System.IO;");
+using System.IO;
+using System.Runtime.CompilerServices;");
                 var sbSe = new StringBuilder();
                 if (namespaceName != null)
                     sbDe.Append(@$"
@@ -55,6 +56,7 @@ namespace {namespaceName}
                 sbDe.Append(@$"
     public static class {id}Serialization
     {{
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static {name} Deserialize(Stream stream)
         {{
             return new {name} {{");
@@ -223,6 +225,7 @@ namespace {namespaceName}
             }};
         }}
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Serialize(this {id} self, Stream stream)
         {{{sbSe}
         }}

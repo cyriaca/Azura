@@ -6,52 +6,52 @@ using System.IO;
 using System.Runtime.CompilerServices;
 
 /// <summary>
-/// Provides serialization for unsigned 8-bit integers.
+/// Provides serialization for booleans.
 /// </summary>
-public static class byteSerialization
+public static class boolSerialization
 {
     /// <summary>
-    /// Deserializes an unsigned 8-bit integer.
+    /// Deserializes a boolean.
     /// </summary>
     /// <param name="stream">Stream to read from.</param>
     /// <returns>Value.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static byte Deserialize(Stream stream)
+    public static bool Deserialize(Stream stream)
     {
-        return stream.ReadBase8()[0];
+        return stream.ReadBase8()[0] != 0;
     }
 
     /// <summary>
-    /// Serializes an unsigned 8-bit integer.
+    /// Serializes a boolean.
     /// </summary>
     /// <param name="self">Value.</param>
     /// <param name="stream">Stream to write to.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Serialize(this byte self, Stream stream)
+    public static void Serialize(this bool self, Stream stream)
     {
-        SerializationInternals.IoBuffer[0] = self;
+        SerializationInternals.IoBuffer[0] = self ? 1 : 0;
         stream.Write(SerializationInternals.IoBuffer, 0, sizeof(byte));
     }
 
     /// <summary>
-    /// Deserializes an array of unsigned 8-bit integers.
+    /// Deserializes an array of booleans.
     /// </summary>
     /// <param name="stream">Stream to read from.</param>
     /// <param name="count">Element count.</param>
     /// <returns>Value.</returns>
-    public static byte[] DeserializeArray(Stream stream, int count)
+    public static bool[] DeserializeArray(Stream stream, int count)
     {
-        byte[] res = new byte[count];
-        stream.ReadSpan<byte>(res, count, true);
+        bool[] res = new bool[count];
+        stream.ReadSpan<bool>(res, count, true);
         return res;
     }
 
     /// <summary>
-    /// Serializes an array of unsigned 8-bit integers.
+    /// Serializes an array of booleans.
     /// </summary>
     /// <param name="self">Value.</param>
     /// <param name="stream">Stream to write to.</param>
-    public static void SerializeArray(this ReadOnlySpan<byte> self, Stream stream)
+    public static void SerializeArray(this ReadOnlySpan<bool> self, Stream stream)
     {
         stream.WriteSpan(self, self.Length, true);
     }

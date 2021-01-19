@@ -4,10 +4,12 @@ using System.Buffers.Binary;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+
 // ReSharper disable CheckNamespace
 // ReSharper disable InconsistentNaming
+#pragma warning disable 1591
 
-internal static class SerializationInternals
+public static class SerializationInternals
 {
     internal static readonly bool _swap = !BitConverter.IsLittleEndian;
     [ThreadStatic] private static byte[]? _buffer;
@@ -75,6 +77,29 @@ internal static class SerializationInternals
         } while (tot < sizeof(ulong));
 
         return IoBuffer;
+    }
+
+    /// <summary>
+    /// Read array.
+    /// </summary>
+    /// <param name="stream">Source stream.</param>
+    /// <param name="target">Target buffer.</param>
+    /// <param name="offset">Offset to read at.</param>
+    /// <param name="count">Number of elements.</param>
+    /// <exception cref="ApplicationException">If failed to read required number of bytes.</exception>
+    public static void ReadArray(this Stream stream, byte[] target, int offset, int count)
+    {
+        if (count == 0) return;
+        int left = count, tot = 0;
+        do
+        {
+            int read = stream.Read(target, offset + tot, Math.Min(4096, left));
+            if (read == 0)
+                throw new ApplicationException(
+                    $"Failed to read required number of bytes! 0x{tot:X} read, 0x{left:X} left");
+            left -= read;
+            tot += read;
+        } while (left > 0);
     }
 
     /// <summary>

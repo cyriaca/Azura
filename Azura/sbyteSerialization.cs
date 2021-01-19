@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.Runtime.CompilerServices;
 
 /// <summary>
 /// Provides serialization for signed 8-bit integers.
@@ -14,6 +15,7 @@ public static class sbyteSerialization
     /// </summary>
     /// <param name="stream">Stream to read from.</param>
     /// <returns>Value.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static sbyte Deserialize(Stream stream)
     {
         return (sbyte)stream.ReadBase8()[0];
@@ -24,6 +26,7 @@ public static class sbyteSerialization
     /// </summary>
     /// <param name="self">Value.</param>
     /// <param name="stream">Stream to write to.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Serialize(this sbyte self, Stream stream)
     {
         SerializationInternals.IoBuffer[0] = (byte)self;

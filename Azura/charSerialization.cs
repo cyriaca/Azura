@@ -8,56 +8,56 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 /// <summary>
-/// Provides serialization for unsigned 32-bit integers.
+/// Provides serialization for characters.
 /// </summary>
-public static class uintSerialization
+public static class charSerialization
 {
     /// <summary>
-    /// Deserializes an unsigned 32-bit integer.
+    /// Deserializes a character.
     /// </summary>
     /// <param name="stream">Stream to read from.</param>
     /// <returns>Value.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static uint Deserialize(Stream stream)
+    public static ushort Deserialize(Stream stream)
     {
         return SerializationInternals._swap
             ? BinaryPrimitives.ReverseEndianness(
-                MemoryMarshal.Read<uint>(stream.ReadBase32()))
-            : MemoryMarshal.Read<uint>(stream.ReadBase32());
+                MemoryMarshal.Read<char>(stream.ReadBase16()))
+            : MemoryMarshal.Read<char>(stream.ReadBase16());
     }
 
     /// <summary>
-    /// Serializes an unsigned 32-bit integer.
+    /// Serializes a character.
     /// </summary>
     /// <param name="self">Value.</param>
     /// <param name="stream">Stream to write to.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Serialize(this uint self, Stream stream)
+    public static void Serialize(this char self, Stream stream)
     {
-        if (SerializationInternals._swap) self = BinaryPrimitives.ReverseEndianness(self);
+        if (SerializationInternals._swap) self = (char)BinaryPrimitives.ReverseEndianness(self);
         MemoryMarshal.Write(SerializationInternals.IoBuffer, ref self);
-        stream.Write(SerializationInternals.IoBuffer, 0, sizeof(uint));
+        stream.Write(SerializationInternals.IoBuffer, 0, sizeof(char));
     }
 
     /// <summary>
-    /// Deserializes an array of unsigned 32-bit integers.
+    /// Deserializes an array of characters.
     /// </summary>
     /// <param name="stream">Stream to read from.</param>
     /// <param name="count">Element count.</param>
     /// <returns>Value.</returns>
-    public static uint[] DeserializeArray(Stream stream, int count)
+    public static char[] DeserializeArray(Stream stream, int count)
     {
-        uint[] res = new uint[count];
-        stream.ReadSpan<uint>(res, count, true);
+        char[] res = new char[count];
+        stream.ReadSpan<char>(res, count, true);
         return res;
     }
 
     /// <summary>
-    /// Serializes an array of unsigned 32-bit integers.
+    /// Serializes an array of characters.
     /// </summary>
     /// <param name="self">Value.</param>
     /// <param name="stream">Stream to write to.</param>
-    public static void SerializeArray(this ReadOnlySpan<uint> self, Stream stream)
+    public static void SerializeArray(this ReadOnlySpan<char> self, Stream stream)
     {
         stream.WriteSpan(self, self.Length, true);
     }
