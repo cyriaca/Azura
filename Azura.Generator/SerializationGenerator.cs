@@ -131,7 +131,7 @@ namespace {namespaceName}
                         case MemberKind.HashSet:
                         {
                             var info = elementInfo[0];
-                            symbol = info.Type.ToString();
+                            symbol = info.Type.ToString().TrimEnd('?');
                             sbDe.Append(info.Nullable
                                 ? info.ValueType
                                     ? $"SerializationBase.DeserializeHashSetValueNullable<{symbol}>(stream, intSerialization.Deserialize(stream), {symbol}Serialization.Deserialize),"
@@ -157,9 +157,63 @@ namespace {namespaceName}
                             break;
                         }
                         case MemberKind.List:
+                        {
+                            var info = elementInfo[0];
+                            symbol = info.Type.ToString().TrimEnd('?');
+                            sbDe.Append(info.Nullable
+                                ? info.ValueType
+                                    ? $"SerializationBase.DeserializeListValueNullable<{symbol}>(stream, intSerialization.Deserialize(stream), {symbol}Serialization.Deserialize),"
+                                    : $"SerializationBase.DeserializeListNullable<{symbol}>(stream, intSerialization.Deserialize(stream), {symbol}Serialization.Deserialize),"
+                                : $"SerializationBase.DeserializeList<{symbol}>(stream, intSerialization.Deserialize(stream), {symbol}Serialization.Deserialize),");
+                            if (nullable)
+                                sbSe.Append(@$"
+            if(self.{element.Name} != default)
+            {{");
+                            sbSe.Append(@$"
+            self.{element.Name}.Count.Serialize(stream);");
+                            sbSe.Append(info.Nullable
+                                ? info.ValueType
+                                    ? @$"
+            SerializationBase.SerializeListValueNullable<{symbol}>(self.{element.Name}, stream, {symbol}Serialization.Serialize);"
+                                    : @$"
+            SerializationBase.SerializeListNullable<{symbol}>(self.{element.Name}, stream, {symbol}Serialization.Serialize);"
+                                : @$"
+            SerializationBase.SerializeList<{symbol}>(self.{element.Name}, stream, {symbol}Serialization.Serialize);");
+                            if (nullable)
+                                sbSe.Append(@"
+            }");
                             break;
+                        }
                         case MemberKind.Dictionary:
+                        {
+                            var info = elementInfo[1];
+                            symbol = info.Type.ToString().TrimEnd('?');
+                            var keyInfo = elementInfo[0];
+                            string keySymbol = keyInfo.Type.ToString();
+                            sbDe.Append(info.Nullable
+                                ? info.ValueType
+                                    ? $"SerializationBase.DeserializeDictionaryValueNullable<{keySymbol}, {symbol}>(stream, intSerialization.Deserialize(stream), {keySymbol}Serialization.Deserialize, {symbol}Serialization.Deserialize),"
+                                    : $"SerializationBase.DeserializeDictionaryNullable<{keySymbol}, {symbol}>(stream, intSerialization.Deserialize(stream), {keySymbol}Serialization.Deserialize, {symbol}Serialization.Deserialize),"
+                                : $"SerializationBase.DeserializeDictionary<{keySymbol}, {symbol}>(stream, intSerialization.Deserialize(stream), {keySymbol}Serialization.Deserialize, {symbol}Serialization.Deserialize),");
+                            if (nullable)
+                                sbSe.Append(@$"
+            if(self.{element.Name} != default)
+            {{");
+                            sbSe.Append(@$"
+            self.{element.Name}.Count.Serialize(stream);");
+                            sbSe.Append(info.Nullable
+                                ? info.ValueType
+                                    ? @$"
+            SerializationBase.SerializeDictionaryValueNullable<{keySymbol}, {symbol}>(self.{element.Name}, stream, {keySymbol}Serialization.Serialize, {symbol}Serialization.Serialize);"
+                                    : @$"
+            SerializationBase.SerializeDictionaryNullable<{keySymbol}, {symbol}>(self.{element.Name}, stream, {keySymbol}Serialization.Serialize, {symbol}Serialization.Serialize);"
+                                : @$"
+            SerializationBase.SerializeDictionary<{keySymbol}, {symbol}>(self.{element.Name}, stream, {keySymbol}Serialization.Serialize, {symbol}Serialization.Serialize);");
+                            if (nullable)
+                                sbSe.Append(@"
+            }");
                             break;
+                        }
                         default:
                             throw new ArgumentOutOfRangeException();
                     }
@@ -263,6 +317,12 @@ namespace {namespaceName}
                     "HashSet"
                         when named.ContainingNamespace.ToString() == "System.Collections.Generic"
                         => MemberKind.HashSet,
+                    "List"
+                        when named.ContainingNamespace.ToString() == "System.Collections.Generic"
+                        => MemberKind.List,
+                    "Dictionary"
+                        when named.ContainingNamespace.ToString() == "System.Collections.Generic"
+                        => MemberKind.Dictionary,
                     _ => MemberKind.Unsupported
                 };
                 return;

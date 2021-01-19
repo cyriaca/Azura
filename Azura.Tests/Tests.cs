@@ -62,9 +62,14 @@ namespace Azura.Tests
             TestStruct?[] arr2 = {new TestStruct {LongValue = 0}, null};
             int?[] arr3 = {3, null};
             HashSet<int> hs = new() {3, 4, 5};
+            Dictionary<string, int?> korone = new() {{"wang", 1}, {"i am die", 2}, {"thank you forever", null}};
             var ta = new TestClassWithArray
             {
-                StringArrayValue = arr, StructArrayValue2 = arr2, IntArrayValue = arr3, HashSet = hs
+                StringArrayValue = arr,
+                StructArrayValue2 = arr2,
+                IntArrayValue = arr3,
+                HashSet = hs,
+                Dictionary = korone
             };
             ta.Serialize(_ms);
             _ms.Position = 0;
@@ -75,6 +80,7 @@ namespace Azura.Tests
             Assert.AreEqual(arr2, resTa.StructArrayValue2);
             Assert.AreEqual(arr3, resTa.IntArrayValue);
             Assert.AreEqual(hs, resTa.HashSet);
+            Assert.AreEqual(korone, resTa.Dictionary);
             _ms.SetLength(0);
         }
     }

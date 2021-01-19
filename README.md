@@ -14,15 +14,14 @@
   - `byte` / `sbyte` / `ushort` / `short` / `uint` / `int` / `ulong` / `long`
   - `float` / `double`
   - `string`
-* Arrays of supported types
+* Common collection types
+  - `Array` / `List` / `HashSet` / `Dictionary`
 * Nullable types
 
 ## Limitations
 
 * Type must have parameter-less constructor
-* Very basic builtin type support
-  - Ideally support for most common collections e.g.
-    `Dictionary<TKey,TValue>` / `List<T>` / `HashSet<T>` should be inbuilt
+* Limited support for BCL types
 * Cannot (currently) serialize nested classes due to namespace
   - Potential future workaround: use root namespace `Azura`
 
@@ -31,7 +30,7 @@
 0. Add generator library (comes with base package as well)
 
 ```xml
-<PackageReference Include="Azura.Generator" Version="ver" />
+<PackageReference Include="Azura.Generator" Version="version" />
 ```
 
 1. Define a data type and mark properties or fields

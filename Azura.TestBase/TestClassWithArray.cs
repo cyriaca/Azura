@@ -11,5 +11,6 @@ namespace Azura.TestBase
         [Azura] public int?[]? IntArrayValue { get; set; }
         [Azura] public int[]? IntArrayValue2 { get; set; }
         [Azura] public HashSet<int>? HashSet { get; set; }
+        [Azura] public Dictionary<string, int?>? Dictionary { get; set; }
     }
 }
