@@ -15,8 +15,8 @@
   - `float` / `double` / `char`
   - `Guid` / `TimeSpan` / `DateTime` / `decimal`
   - `string`
-* Common BCL collection types
   - `T[]` / `List<T>` / `HashSet<T>` / `Dictionary<TKey, TValue>`
+    - Includes faster path for arrays of primitives
 * Nullable types
 
 ## Limitations
