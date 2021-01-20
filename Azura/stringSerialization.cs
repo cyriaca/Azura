@@ -41,6 +41,18 @@ public static class stringSerialization
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Serialize(this string self, Stream stream)
     {
+        string v = self;
+        Serialize(ref v, stream);
+    }
+
+    /// <summary>
+    /// Serializes a string.
+    /// </summary>
+    /// <param name="self">Value.</param>
+    /// <param name="stream">Stream to write to.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void Serialize(ref string self, Stream stream)
+    {
         int count = Encoding.UTF8.GetByteCount(self);
         count.Serialize(stream);
         byte[] buf = Shared.Rent(count);

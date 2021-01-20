@@ -29,7 +29,19 @@ namespace System
         /// <param name="self">Value.</param>
         /// <param name="stream">Stream to write to.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Serialize(this Guid self, Stream stream)
+        public static void Serialize(Guid self, Stream stream)
+        {
+            MemoryMarshal.Write(SerializationInternals.IoBuffer, ref self);
+            stream.Write(SerializationInternals.IoBuffer, 0, sizeof(decimal));
+        }
+
+        /// <summary>
+        /// Serializes a guid.
+        /// </summary>
+        /// <param name="self">Value.</param>
+        /// <param name="stream">Stream to write to.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Serialize(this ref Guid self, Stream stream)
         {
             MemoryMarshal.Write(SerializationInternals.IoBuffer, ref self);
             stream.Write(SerializationInternals.IoBuffer, 0, sizeof(decimal));

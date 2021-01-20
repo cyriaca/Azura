@@ -32,10 +32,23 @@ public static class ulongSerialization
     /// <param name="self">Value.</param>
     /// <param name="stream">Stream to write to.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Serialize(this ulong self, Stream stream)
+    public static void Serialize(ulong self, Stream stream)
     {
         if (SerializationInternals._swap) self = BinaryPrimitives.ReverseEndianness(self);
         MemoryMarshal.Write(SerializationInternals.IoBuffer, ref self);
+        stream.Write(SerializationInternals.IoBuffer, 0, sizeof(ulong));
+    }
+
+    /// <summary>
+    /// Serializes an unsigned 64-bit integer.
+    /// </summary>
+    /// <param name="self">Value.</param>
+    /// <param name="stream">Stream to write to.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void Serialize(this ref ulong self, Stream stream)
+    {
+        ulong v = SerializationInternals._swap ? BinaryPrimitives.ReverseEndianness(self) : self;
+        MemoryMarshal.Write(SerializationInternals.IoBuffer, ref v);
         stream.Write(SerializationInternals.IoBuffer, 0, sizeof(ulong));
     }
 

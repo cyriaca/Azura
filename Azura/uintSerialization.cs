@@ -32,10 +32,23 @@ public static class uintSerialization
     /// <param name="self">Value.</param>
     /// <param name="stream">Stream to write to.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Serialize(this uint self, Stream stream)
+    public static void Serialize(uint self, Stream stream)
     {
         if (SerializationInternals._swap) self = BinaryPrimitives.ReverseEndianness(self);
         MemoryMarshal.Write(SerializationInternals.IoBuffer, ref self);
+        stream.Write(SerializationInternals.IoBuffer, 0, sizeof(uint));
+    }
+
+    /// <summary>
+    /// Serializes an unsigned 32-bit integer.
+    /// </summary>
+    /// <param name="self">Value.</param>
+    /// <param name="stream">Stream to write to.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void Serialize(this ref uint self, Stream stream)
+    {
+        uint v = SerializationInternals._swap ? BinaryPrimitives.ReverseEndianness(self) : self;
+        MemoryMarshal.Write(SerializationInternals.IoBuffer, ref v);
         stream.Write(SerializationInternals.IoBuffer, 0, sizeof(uint));
     }
 

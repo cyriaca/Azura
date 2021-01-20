@@ -28,7 +28,19 @@ public static class doubleSerialization
     /// <param name="self">Value.</param>
     /// <param name="stream">Stream to write to.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Serialize(this double self, Stream stream)
+    public static void Serialize(double self, Stream stream)
+    {
+        MemoryMarshal.Write(SerializationInternals.IoBuffer, ref self);
+        stream.Write(SerializationInternals.IoBuffer, 0, sizeof(double));
+    }
+
+    /// <summary>
+    /// Serializes a 64-bit floating-point value.
+    /// </summary>
+    /// <param name="self">Value.</param>
+    /// <param name="stream">Stream to write to.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void Serialize(this ref double self, Stream stream)
     {
         MemoryMarshal.Write(SerializationInternals.IoBuffer, ref self);
         stream.Write(SerializationInternals.IoBuffer, 0, sizeof(double));

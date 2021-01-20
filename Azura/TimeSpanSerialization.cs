@@ -33,9 +33,23 @@ namespace System
         /// </summary>
         /// <param name="self">Value.</param>
         /// <param name="stream">Stream to write to.</param>
-        public static unsafe void Serialize(this TimeSpan self, Stream stream)
+        public static unsafe void Serialize(TimeSpan self, Stream stream)
         {
             long value = *(long*)&self;
+            if (SerializationInternals._swap) value = BinaryPrimitives.ReverseEndianness(value);
+            MemoryMarshal.Write(SerializationInternals.IoBuffer, ref value);
+            stream.Write(SerializationInternals.IoBuffer, 0, sizeof(long));
+        }
+
+        /// <summary>
+        /// Serializes a timespan.
+        /// </summary>
+        /// <param name="self">Value.</param>
+        /// <param name="stream">Stream to write to.</param>
+        public static unsafe void Serialize(this ref TimeSpan self, Stream stream)
+        {
+            long value;
+            fixed (void* p = &self) value = *(long*)p;
             if (SerializationInternals._swap) value = BinaryPrimitives.ReverseEndianness(value);
             MemoryMarshal.Write(SerializationInternals.IoBuffer, ref value);
             stream.Write(SerializationInternals.IoBuffer, 0, sizeof(long));

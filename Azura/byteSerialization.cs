@@ -27,7 +27,19 @@ public static class byteSerialization
     /// <param name="self">Value.</param>
     /// <param name="stream">Stream to write to.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Serialize(this byte self, Stream stream)
+    public static void Serialize(byte self, Stream stream)
+    {
+        SerializationInternals.IoBuffer[0] = self;
+        stream.Write(SerializationInternals.IoBuffer, 0, sizeof(byte));
+    }
+
+    /// <summary>
+    /// Serializes an unsigned 8-bit integer.
+    /// </summary>
+    /// <param name="self">Value.</param>
+    /// <param name="stream">Stream to write to.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void Serialize(this ref byte self, Stream stream)
     {
         SerializationInternals.IoBuffer[0] = self;
         stream.Write(SerializationInternals.IoBuffer, 0, sizeof(byte));

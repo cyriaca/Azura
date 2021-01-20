@@ -20,7 +20,7 @@ public static class SerializationBase
     /// <param name="count">Element count.</param>
     /// <param name="deserialize">Deserializer method.</param>
     /// <returns>Value.</returns>
-    public static T[] DeserializeArray<T>(Stream stream, int count, Func<Stream, T> deserialize)
+    public static T[] DeserializeArray<T>(Stream stream, int count, Serialization<T>.Deserialize deserialize)
     {
         T[] res = new T[count];
         for (int i = 0; i < count; i++) res[i] = deserialize(stream);
@@ -33,9 +33,9 @@ public static class SerializationBase
     /// <param name="self">Value.</param>
     /// <param name="stream">Stream to write to.</param>
     /// <param name="serialize">Serializer method.</param>
-    public static void SerializeArray<T>(ReadOnlySpan<T> self, Stream stream, Action<T, Stream> serialize)
+    public static void SerializeArray<T>(Span<T> self, Stream stream, Serialization<T>.Serialize serialize)
     {
-        for (int i = 0; i < self.Length; i++) serialize(self[i], stream);
+        for (int i = 0; i < self.Length; i++) serialize(ref self[i], stream);
     }
 
     /// <summary>
@@ -45,7 +45,8 @@ public static class SerializationBase
     /// <param name="count">Element count.</param>
     /// <param name="deserialize">Deserializer method.</param>
     /// <returns>Value.</returns>
-    public static T?[] DeserializeArrayValueNullable<T>(Stream stream, int count, Func<Stream, T> deserialize)
+    public static T?[] DeserializeArrayValueNullable<T>(Stream stream, int count,
+        Serialization<T>.Deserialize deserialize)
         where T : struct
     {
         T?[] res = new T?[count];
@@ -64,13 +65,18 @@ public static class SerializationBase
     /// <param name="self">Value.</param>
     /// <param name="stream">Stream to write to.</param>
     /// <param name="serialize">Serializer method.</param>
-    public static void SerializeArrayValueNullable<T>(ReadOnlySpan<T?> self, Stream stream,
-        Action<T, Stream> serialize) where T : struct
+    public static void SerializeArrayValueNullable<T>(Span<T?> self, Stream stream,
+        Serialization<T>.Serialize serialize) where T : struct
     {
-        for (int i = 0; i < self.Length; i++)
+        foreach (var t in self)
         {
-            (self[i] != null ? (byte)1 : (byte)0).Serialize(stream);
-            if (self[i] != null) serialize(self[i]!.Value, stream);
+            bool hasValue = t != null;
+            hasValue.Serialize(stream);
+            if (t != null)
+            {
+                var x = t.Value;
+                serialize(ref x, stream);
+            }
         }
     }
 
@@ -81,7 +87,7 @@ public static class SerializationBase
     /// <param name="count">Element count.</param>
     /// <param name="deserialize">Deserializer method.</param>
     /// <returns>Value.</returns>
-    public static T?[] DeserializeArrayNullable<T>(Stream stream, int count, Func<Stream, T> deserialize)
+    public static T?[] DeserializeArrayNullable<T>(Stream stream, int count, Serialization<T>.Deserialize deserialize)
     {
         T?[] res = new T?[count];
         for (int i = 0; i < count; i++)
@@ -99,12 +105,18 @@ public static class SerializationBase
     /// <param name="self">Value.</param>
     /// <param name="stream">Stream to write to.</param>
     /// <param name="serialize">Serializer method.</param>
-    public static void SerializeArrayNullable<T>(ReadOnlySpan<T?> self, Stream stream, Action<T, Stream> serialize)
+    public static void SerializeArrayNullable<T>(Span<T?> self, Stream stream,
+        Serialization<T>.Serialize serialize)
     {
         for (int i = 0; i < self.Length; i++)
         {
-            (self[i] != null ? (byte)1 : (byte)0).Serialize(stream);
-            if (self[i] != null) serialize(self[i]!, stream);
+            var t = self[i];
+            bool hasValue = t != null;
+            hasValue.Serialize(stream);
+            if (t != null)
+            {
+                serialize(ref t!, stream);
+            }
         }
     }
 
@@ -119,7 +131,7 @@ public static class SerializationBase
     /// <param name="count">Element count.</param>
     /// <param name="deserialize">Deserializer method.</param>
     /// <returns>Value.</returns>
-    public static List<T> DeserializeList<T>(Stream stream, int count, Func<Stream, T> deserialize)
+    public static List<T> DeserializeList<T>(Stream stream, int count, Serialization<T>.Deserialize deserialize)
     {
         List<T> res = new();
         for (int i = 0; i < count; i++) res.Add(deserialize(stream));
@@ -132,9 +144,13 @@ public static class SerializationBase
     /// <param name="self">Value.</param>
     /// <param name="stream">Stream to write to.</param>
     /// <param name="serialize">Serializer method.</param>
-    public static void SerializeList<T>(List<T> self, Stream stream, Action<T, Stream> serialize)
+    public static void SerializeList<T>(List<T> self, Stream stream, Serialization<T>.Serialize serialize)
     {
-        for (int i = 0; i < self.Count; i++) serialize(self[i], stream);
+        foreach (var t in self)
+        {
+            var x = t;
+            serialize(ref x, stream);
+        }
     }
 
     /// <summary>
@@ -144,7 +160,8 @@ public static class SerializationBase
     /// <param name="count">Element count.</param>
     /// <param name="deserialize">Deserializer method.</param>
     /// <returns>Value.</returns>
-    public static List<T?> DeserializeListValueNullable<T>(Stream stream, int count, Func<Stream, T> deserialize)
+    public static List<T?> DeserializeListValueNullable<T>(Stream stream, int count,
+        Serialization<T>.Deserialize deserialize)
         where T : struct
     {
         List<T?> res = new();
@@ -163,12 +180,17 @@ public static class SerializationBase
     /// <param name="stream">Stream to write to.</param>
     /// <param name="serialize">Serializer method.</param>
     public static void SerializeListValueNullable<T>(List<T?> self, Stream stream,
-        Action<T, Stream> serialize) where T : struct
+        Serialization<T>.Serialize serialize) where T : struct
     {
-        for (int i = 0; i < self.Count; i++)
+        foreach (var t in self)
         {
-            (self[i] != null ? (byte)1 : (byte)0).Serialize(stream);
-            if (self[i] != null) serialize(self[i]!.Value, stream);
+            bool hasValue = t != null;
+            hasValue.Serialize(stream);
+            if (t != null)
+            {
+                var x = t.Value;
+                serialize(ref x, stream);
+            }
         }
     }
 
@@ -179,7 +201,8 @@ public static class SerializationBase
     /// <param name="count">Element count.</param>
     /// <param name="deserialize">Deserializer method.</param>
     /// <returns>Value.</returns>
-    public static List<T?> DeserializeListNullable<T>(Stream stream, int count, Func<Stream, T> deserialize)
+    public static List<T?> DeserializeListNullable<T>(Stream stream, int count,
+        Serialization<T>.Deserialize deserialize)
     {
         List<T?> res = new();
         for (int i = 0; i < count; i++)
@@ -194,12 +217,17 @@ public static class SerializationBase
     /// <param name="self">Value.</param>
     /// <param name="stream">Stream to write to.</param>
     /// <param name="serialize">Serializer method.</param>
-    public static void SerializeListNullable<T>(List<T?> self, Stream stream, Action<T, Stream> serialize)
+    public static void SerializeListNullable<T>(List<T?> self, Stream stream, Serialization<T>.Serialize serialize)
     {
-        for (int i = 0; i < self.Count; i++)
+        foreach (var t in self)
         {
-            (self[i] != null ? (byte)1 : (byte)0).Serialize(stream);
-            if (self[i] != null) serialize(self[i]!, stream);
+            bool hasValue = t != null;
+            hasValue.Serialize(stream);
+            if (t != null)
+            {
+                var x = t;
+                serialize(ref x, stream);
+            }
         }
     }
 
@@ -214,7 +242,7 @@ public static class SerializationBase
     /// <param name="count">Element count.</param>
     /// <param name="deserialize">Deserializer method.</param>
     /// <returns>Value.</returns>
-    public static HashSet<T> DeserializeHashSet<T>(Stream stream, int count, Func<Stream, T> deserialize)
+    public static HashSet<T> DeserializeHashSet<T>(Stream stream, int count, Serialization<T>.Deserialize deserialize)
     {
         HashSet<T> res = new();
         for (int i = 0; i < count; i++) res.Add(deserialize(stream));
@@ -227,9 +255,13 @@ public static class SerializationBase
     /// <param name="self">Value.</param>
     /// <param name="stream">Stream to write to.</param>
     /// <param name="serialize">Serializer method.</param>
-    public static void SerializeHashSet<T>(HashSet<T> self, Stream stream, Action<T, Stream> serialize)
+    public static void SerializeHashSet<T>(HashSet<T> self, Stream stream, Serialization<T>.Serialize serialize)
     {
-        foreach (var t in self) serialize(t, stream);
+        foreach (var t in self)
+        {
+            var x = t;
+            serialize(ref x, stream);
+        }
     }
 
     /// <summary>
@@ -240,7 +272,7 @@ public static class SerializationBase
     /// <param name="deserialize">Deserializer method.</param>
     /// <returns>Value.</returns>
     public static HashSet<T?> DeserializeHashSetValueNullable<T>(Stream stream, int count,
-        Func<Stream, T> deserialize) where T : struct
+        Serialization<T>.Deserialize deserialize) where T : struct
     {
         HashSet<T?> res = new();
         for (int i = 0; i < count; i++)
@@ -255,12 +287,17 @@ public static class SerializationBase
     /// <param name="stream">Stream to write to.</param>
     /// <param name="serialize">Serializer method.</param>
     public static void SerializeHashSetValueNullable<T>(HashSet<T?> self, Stream stream,
-        Action<T, Stream> serialize) where T : struct
+        Serialization<T>.Serialize serialize) where T : struct
     {
         foreach (var t in self)
         {
-            (t != null ? (byte)1 : (byte)0).Serialize(stream);
-            if (t != null) serialize(t!.Value, stream);
+            bool hasValue = t != null;
+            hasValue.Serialize(stream);
+            if (t != null)
+            {
+                var x = t!.Value;
+                serialize(ref x, stream);
+            }
         }
     }
 
@@ -271,7 +308,8 @@ public static class SerializationBase
     /// <param name="count">Element count.</param>
     /// <param name="deserialize">Deserializer method.</param>
     /// <returns>Value.</returns>
-    public static HashSet<T?> DeserializeHashSetNullable<T>(Stream stream, int count, Func<Stream, T> deserialize)
+    public static HashSet<T?> DeserializeHashSetNullable<T>(Stream stream, int count,
+        Serialization<T>.Deserialize deserialize)
     {
         HashSet<T?> res = new();
         for (int i = 0; i < count; i++)
@@ -285,12 +323,18 @@ public static class SerializationBase
     /// <param name="self">Value.</param>
     /// <param name="stream">Stream to write to.</param>
     /// <param name="serialize">Serializer method.</param>
-    public static void SerializeHashSetNullable<T>(HashSet<T?> self, Stream stream, Action<T, Stream> serialize)
+    public static void SerializeHashSetNullable<T>(HashSet<T?> self, Stream stream,
+        Serialization<T>.Serialize serialize)
     {
         foreach (var t in self)
         {
-            (t != null ? (byte)1 : (byte)0).Serialize(stream);
-            if (t != null) serialize(t!, stream);
+            bool hasValue = t != null;
+            hasValue.Serialize(stream);
+            if (t != null)
+            {
+                var x = t;
+                serialize(ref x, stream);
+            }
         }
     }
 
@@ -307,7 +351,7 @@ public static class SerializationBase
     /// <param name="deserializeValue">Deserializer method.</param>
     /// <returns>Value.</returns>
     public static Dictionary<TKey, TValue> DeserializeDictionary<TKey, TValue>(Stream stream, int count,
-        Func<Stream, TKey> deserializeKey, Func<Stream, TValue> deserializeValue)
+        Serialization<TKey>.Deserialize deserializeKey, Serialization<TValue>.Deserialize deserializeValue)
     {
         Dictionary<TKey, TValue> res = new();
         for (int i = 0; i < count; i++) res.Add(deserializeKey(stream), deserializeValue(stream));
@@ -322,12 +366,14 @@ public static class SerializationBase
     /// <param name="serializeKey">Serializer method.</param>
     /// <param name="serializeValue">Serializer method.</param>
     public static void SerializeDictionary<TKey, TValue>(Dictionary<TKey, TValue> self, Stream stream,
-        Action<TKey, Stream> serializeKey, Action<TValue, Stream> serializeValue)
+        Serialization<TKey>.Serialize serializeKey, Serialization<TValue>.Serialize serializeValue)
     {
         foreach (var t in self)
         {
-            serializeKey(t.Key, stream);
-            serializeValue(t.Value, stream);
+            var x = t.Key;
+            serializeKey(ref x, stream);
+            var y = t.Value;
+            serializeValue(ref y, stream);
         }
     }
 
@@ -340,8 +386,8 @@ public static class SerializationBase
     /// <param name="deserializeValue">Deserializer method.</param>
     /// <returns>Value.</returns>
     public static Dictionary<TKey, TValue?> DeserializeDictionaryValueNullable<TKey, TValue>(Stream stream,
-        int count,
-        Func<Stream, TKey> deserializeKey, Func<Stream, TValue> deserializeValue) where TValue : struct
+        int count, Serialization<TKey>.Deserialize deserializeKey, Serialization<TValue>.Deserialize deserializeValue)
+        where TValue : struct
     {
         Dictionary<TKey, TValue?> res = new();
         for (int i = 0; i < count; i++)
@@ -361,13 +407,20 @@ public static class SerializationBase
     /// <param name="serializeKey">Serializer method.</param>
     /// <param name="serializeValue">Serializer method.</param>
     public static void SerializeDictionaryValueNullable<TKey, TValue>(Dictionary<TKey, TValue?> self, Stream stream,
-        Action<TKey, Stream> serializeKey, Action<TValue, Stream> serializeValue) where TValue : struct
+        Serialization<TKey>.Serialize serializeKey, Serialization<TValue>.Serialize serializeValue)
+        where TValue : struct
     {
         foreach (var t in self)
         {
-            serializeKey(t.Key, stream);
-            (t.Value != null ? (byte)1 : (byte)0).Serialize(stream);
-            if (t.Value != null) serializeValue(t.Value.Value, stream);
+            var x = t.Key;
+            serializeKey(ref x, stream);
+            bool hasValue = t.Value != null;
+            hasValue.Serialize(stream);
+            if (t.Value != null)
+            {
+                var y = t.Value.Value;
+                serializeValue(ref y, stream);
+            }
         }
     }
 
@@ -380,7 +433,7 @@ public static class SerializationBase
     /// <param name="deserializeValue">Deserializer method.</param>
     /// <returns>Value.</returns>
     public static Dictionary<TKey, TValue?> DeserializeDictionaryNullable<TKey, TValue>(Stream stream, int count,
-        Func<Stream, TKey> deserializeKey, Func<Stream, TValue> deserializeValue)
+        Serialization<TKey>.Deserialize deserializeKey, Serialization<TValue>.Deserialize deserializeValue)
     {
         Dictionary<TKey, TValue?> res = new();
         for (int i = 0; i < count; i++)
@@ -400,13 +453,19 @@ public static class SerializationBase
     /// <param name="serializeKey">Serializer method.</param>
     /// <param name="serializeValue">Serializer method.</param>
     public static void SerializeDictionaryNullable<TKey, TValue>(Dictionary<TKey, TValue?> self, Stream stream,
-        Action<TKey, Stream> serializeKey, Action<TValue, Stream> serializeValue)
+        Serialization<TKey>.Serialize serializeKey, Serialization<TValue>.Serialize serializeValue)
     {
         foreach (var t in self)
         {
-            serializeKey(t.Key, stream);
-            (t.Value != null ? (byte)1 : (byte)0).Serialize(stream);
-            if (t.Value != null) serializeValue(t.Value, stream);
+            var x = t.Key;
+            serializeKey(ref x, stream);
+            bool hasValue = t.Value != null;
+            hasValue.Serialize(stream);
+            if (t.Value != null)
+            {
+                var y = t.Value;
+                serializeValue(ref y, stream);
+            }
         }
     }
 

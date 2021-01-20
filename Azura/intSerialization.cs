@@ -32,10 +32,23 @@ public static class intSerialization
     /// <param name="self">Value.</param>
     /// <param name="stream">Stream to write to.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Serialize(this int self, Stream stream)
+    public static void Serialize(int self, Stream stream)
     {
         if (SerializationInternals._swap) self = BinaryPrimitives.ReverseEndianness(self);
         MemoryMarshal.Write(SerializationInternals.IoBuffer, ref self);
+        stream.Write(SerializationInternals.IoBuffer, 0, sizeof(int));
+    }
+
+    /// <summary>
+    /// Serializes a signed 32-bit integer.
+    /// </summary>
+    /// <param name="self">Value.</param>
+    /// <param name="stream">Stream to write to.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void Serialize(this ref int self, Stream stream)
+    {
+        int v = SerializationInternals._swap ? BinaryPrimitives.ReverseEndianness(self) : self;
+        MemoryMarshal.Write(SerializationInternals.IoBuffer, ref v);
         stream.Write(SerializationInternals.IoBuffer, 0, sizeof(int));
     }
 

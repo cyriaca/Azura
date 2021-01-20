@@ -32,10 +32,23 @@ public static class charSerialization
     /// <param name="self">Value.</param>
     /// <param name="stream">Stream to write to.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Serialize(this char self, Stream stream)
+    public static void Serialize(char self, Stream stream)
     {
         if (SerializationInternals._swap) self = (char)BinaryPrimitives.ReverseEndianness(self);
         MemoryMarshal.Write(SerializationInternals.IoBuffer, ref self);
+        stream.Write(SerializationInternals.IoBuffer, 0, sizeof(char));
+    }
+
+    /// <summary>
+    /// Serializes a character.
+    /// </summary>
+    /// <param name="self">Value.</param>
+    /// <param name="stream">Stream to write to.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void Serialize(this ref char self, Stream stream)
+    {
+        char v = SerializationInternals._swap ? (char)BinaryPrimitives.ReverseEndianness(self) : self;
+        MemoryMarshal.Write(SerializationInternals.IoBuffer, ref v);
         stream.Write(SerializationInternals.IoBuffer, 0, sizeof(char));
     }
 

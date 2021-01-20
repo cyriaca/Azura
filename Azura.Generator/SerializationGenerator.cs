@@ -25,6 +25,7 @@ namespace Azura.Generator
                 string attr = sem.GetSymbolInfo(item.Attribute).Symbol!.ContainingSymbol.ToString();
                 if (attr != "Azura.AzuraAttribute") continue;
                 string name = item.Type.GetFullyQualifiedName();
+                bool valueType = item.Type is StructDeclarationSyntax;
                 if (item.Type.TryGetParentSyntax(out BaseTypeDeclarationSyntax _))
                 {
                     // This type has a type in the parent hierarchy, which means this is a nested type
@@ -81,17 +82,34 @@ namespace {namespaceName}
                     symbol = symbol.TrimEnd('?');
                     if (nullable)
                         sbSe.Append($@"
-            (self.{element.Name} != default ? (byte)1 : (byte)0).Serialize(stream);");
+            byteSerialization.Serialize((self.{element.Name} != default ? (byte)1 : (byte)0), stream);");
                     switch (kind)
                     {
                         case MemberKind.Plain:
                         {
+                            var elementTypeInfo = sem.GetTypeInfo(element.Type).Type;
+                            bool elementValueType = elementTypeInfo is {IsValueType: true};
+                            // Prims don't have much to gain, just ignore these
+                            bool elementCanRef = !_primitives.Contains(symbol) &&
+                                                 (valueType || element.Member is FieldDeclarationSyntax);
                             sbDe.Append($"{symbol}Serialization.Deserialize(stream),");
-                            sbSe.Append(nullable
-                                ? @$"
-                self.{element.Name}?.Serialize(stream);"
-                                : @$"
-                self.{element.Name}.Serialize(stream);");
+                            if (elementCanRef)
+                                sbSe.Append(elementValueType
+                                    ? nullable ? @$"
+            if(self.{element.Name} != null) {symbol}Serialization.Serialize(self.{element.Name}.Value, stream);"
+                                    : @$"
+            self.{element.Name}.Serialize(stream);"
+                                    : @$"
+            if(self.{element.Name} != null) {symbol}Serialization.Serialize(ref self.{element.Name}, stream);");
+                            else
+                                sbSe.Append(elementValueType
+                                    ? nullable ? @$"
+            if(self.{element.Name} != null) {symbol}Serialization.Serialize(self.{element.Name}.Value!, stream);"
+                                    : @$"
+            {symbol}Serialization.Serialize(self.{element.Name}, stream);"
+                                    : @$"
+            self.{element.Name}{(nullable ? "?" : "")}.Serialize(stream);");
+
                             break;
                         }
                         case MemberKind.Array:
@@ -111,7 +129,7 @@ namespace {namespaceName}
             if(self.{element.Name} != default)
             {{");
                             sbSe.Append(@$"
-            self.{element.Name}.Length.Serialize(stream);");
+            intSerialization.Serialize(self.{element.Name}.Length, stream);");
 
                             if (!info.Nullable && _primitives.Contains(symbol))
                                 sbSe.Append(@$"
@@ -144,7 +162,7 @@ namespace {namespaceName}
             if(self.{element.Name} != default)
             {{");
                             sbSe.Append(@$"
-            self.{element.Name}.Count.Serialize(stream);");
+            intSerialization.Serialize(self.{element.Name}.Count, stream);");
                             sbSe.Append(info.Nullable
                                 ? info.ValueType
                                     ? @$"
@@ -172,7 +190,7 @@ namespace {namespaceName}
             if(self.{element.Name} != default)
             {{");
                             sbSe.Append(@$"
-            self.{element.Name}.Count.Serialize(stream);");
+            intSerialization.Serialize(self.{element.Name}.Count, stream);");
                             sbSe.Append(info.Nullable
                                 ? info.ValueType
                                     ? @$"
@@ -202,7 +220,7 @@ namespace {namespaceName}
             if(self.{element.Name} != default)
             {{");
                             sbSe.Append(@$"
-            self.{element.Name}.Count.Serialize(stream);");
+            intSerialization.Serialize(self.{element.Name}.Count, stream);");
                             sbSe.Append(info.Nullable
                                 ? info.ValueType
                                     ? @$"
@@ -221,12 +239,33 @@ namespace {namespaceName}
                     }
                 }
 
-                sbDe.Append(@$"
-            }};
+                sbDe.Append(@"
+            };
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]");
+                sbDe.Append(valueType
+                    ? @$"
+        public static void Serialize({id} self, Stream stream)
+        {{
+            self.Serialize(stream);
         }}
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
+        public static void Serialize(this ref {id} self, Stream stream)
+        {{{sbSe}
+        }}
+    }}"
+                    : @$"
         public static void Serialize(this {id} self, Stream stream)
+        {{
+            var v = self;
+            Serialize(ref v, stream);
+        }}
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Serialize(ref {id} self, Stream stream)
         {{{sbSe}
         }}
     }}");
@@ -344,7 +383,8 @@ namespace {namespaceName}
             public record RequestItem(TypeDeclarationSyntax Type, AttributeSyntax Attribute,
                 List<RequestElementItem> Elements);
 
-            public record RequestElementItem(AttributeSyntax Attribute, TypeSyntax Type, SyntaxToken Name);
+            public record RequestElementItem(MemberDeclarationSyntax Member, AttributeSyntax Attribute, TypeSyntax Type,
+                SyntaxToken Name);
 
             public List<RequestItem> Requests { get; } = new();
 
@@ -362,7 +402,7 @@ namespace {namespaceName}
                                     foreach (var z in y.AttributeLists.SelectMany(v => v.Attributes))
                                         if (z.Name.ToString() == "Azura")
                                         {
-                                            items.Add(new RequestElementItem(z, pds.Type, pds.Identifier));
+                                            items.Add(new RequestElementItem(y, z, pds.Type, pds.Identifier));
                                             break;
                                         }
                                 }
@@ -373,7 +413,7 @@ namespace {namespaceName}
                                         if (z.Name.ToString() == "Azura")
                                         {
                                             foreach (VariableDeclaratorSyntax v in fds.Declaration.Variables)
-                                                items.Add(new RequestElementItem(z, fds.Declaration.Type,
+                                                items.Add(new RequestElementItem(y, z, fds.Declaration.Type,
                                                     v.Identifier));
                                             break;
                                         }

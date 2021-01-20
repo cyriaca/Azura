@@ -36,9 +36,24 @@ namespace System
         /// <param name="self">Value.</param>
         /// <param name="stream">Stream to write to.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe void Serialize(this DateTime self, Stream stream)
+        public static unsafe void Serialize(DateTime self, Stream stream)
         {
             long value = *(long*)&self;
+            if (SerializationInternals._swap) value = BinaryPrimitives.ReverseEndianness(value);
+            MemoryMarshal.Write(SerializationInternals.IoBuffer, ref value);
+            stream.Write(SerializationInternals.IoBuffer, 0, sizeof(long));
+        }
+
+        /// <summary>
+        /// Serializes a datetime.
+        /// </summary>
+        /// <param name="self">Value.</param>
+        /// <param name="stream">Stream to write to.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe void Serialize(this ref DateTime self, Stream stream)
+        {
+            long value;
+            fixed (void* p = &self) value = *(long*)p;
             if (SerializationInternals._swap) value = BinaryPrimitives.ReverseEndianness(value);
             MemoryMarshal.Write(SerializationInternals.IoBuffer, ref value);
             stream.Write(SerializationInternals.IoBuffer, 0, sizeof(long));

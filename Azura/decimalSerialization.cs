@@ -28,7 +28,19 @@ public static class decimalSerialization
     /// <param name="self">Value.</param>
     /// <param name="stream">Stream to write to.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Serialize(this decimal self, Stream stream)
+    public static void Serialize(decimal self, Stream stream)
+    {
+        MemoryMarshal.Write(SerializationInternals.IoBuffer, ref self);
+        stream.Write(SerializationInternals.IoBuffer, 0, sizeof(decimal));
+    }
+
+    /// <summary>
+    /// Serializes a 128-bit fixed-point value.
+    /// </summary>
+    /// <param name="self">Value.</param>
+    /// <param name="stream">Stream to write to.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void Serialize(this ref decimal self, Stream stream)
     {
         MemoryMarshal.Write(SerializationInternals.IoBuffer, ref self);
         stream.Write(SerializationInternals.IoBuffer, 0, sizeof(decimal));

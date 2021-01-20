@@ -24,7 +24,7 @@ public static class SerializationInternals
             int read = stream.Read(IoBuffer, tot, sizeof(byte) - tot);
             if (read == 0)
                 throw new EndOfStreamException(
-                    $"Failed to read required number of bytes! 0x{tot:X} read, 0x{sizeof(ushort) - tot:X} left");
+                    $"Failed to read required number of bytes! 0x{tot:X} read, 0x{sizeof(byte) - tot:X} left");
             tot += read;
         } while (tot < sizeof(byte));
 

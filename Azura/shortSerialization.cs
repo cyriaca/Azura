@@ -32,10 +32,23 @@ public static class shortSerialization
     /// <param name="self">Value.</param>
     /// <param name="stream">Stream to write to.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Serialize(this short self, Stream stream)
+    public static void Serialize(short self, Stream stream)
     {
         if (SerializationInternals._swap) self = BinaryPrimitives.ReverseEndianness(self);
         MemoryMarshal.Write(SerializationInternals.IoBuffer, ref self);
+        stream.Write(SerializationInternals.IoBuffer, 0, sizeof(short));
+    }
+
+    /// <summary>
+    /// Serializes a signed 16-bit integer.
+    /// </summary>
+    /// <param name="self">Value.</param>
+    /// <param name="stream">Stream to write to.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void Serialize(this ref short self, Stream stream)
+    {
+        short v = SerializationInternals._swap ? BinaryPrimitives.ReverseEndianness(self) : self;
+        MemoryMarshal.Write(SerializationInternals.IoBuffer, ref v);
         stream.Write(SerializationInternals.IoBuffer, 0, sizeof(short));
     }
 

@@ -27,7 +27,19 @@ public static class sbyteSerialization
     /// <param name="self">Value.</param>
     /// <param name="stream">Stream to write to.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Serialize(this sbyte self, Stream stream)
+    public static void Serialize(sbyte self, Stream stream)
+    {
+        SerializationInternals.IoBuffer[0] = (byte)self;
+        stream.Write(SerializationInternals.IoBuffer, 0, sizeof(sbyte));
+    }
+
+    /// <summary>
+    /// Serializes a signed 8-bit integer.
+    /// </summary>
+    /// <param name="self">Value.</param>
+    /// <param name="stream">Stream to write to.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void Serialize(this ref sbyte self, Stream stream)
     {
         SerializationInternals.IoBuffer[0] = (byte)self;
         stream.Write(SerializationInternals.IoBuffer, 0, sizeof(sbyte));
