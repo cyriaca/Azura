@@ -246,10 +246,7 @@ namespace {namespaceName}
         [MethodImpl(MethodImplOptions.AggressiveInlining)]");
                 sbDe.Append(valueType
                     ? @$"
-        public static void Serialize({id} self, Stream stream)
-        {{
-            self.Serialize(stream);
-        }}
+        public static void Serialize({id} self, Stream stream) => self.Serialize(stream);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 
@@ -258,11 +255,7 @@ namespace {namespaceName}
         }}
     }}"
                     : @$"
-        public static void Serialize(this {id} self, Stream stream)
-        {{
-            var v = self;
-            Serialize(ref v, stream);
-        }}
+        public static void Serialize(this {id} self, Stream stream) => Serialize(ref self, stream);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Serialize(ref {id} self, Stream stream)

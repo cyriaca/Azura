@@ -17,11 +17,12 @@
   - `T[]` / `List<T>` / `HashSet<T>` / `Dictionary<TKey, TValue>`
     - Includes faster path for arrays of primitives
 * Nullable types
+* Little-endian storage with native endianness conversion
 
 ## Limitations
 
-* Type must have parameter-less constructor to support serializer generation
-* No support for generic types
+* Type must have parameterless constructor to support serializer generation
+* Cannot serialize generic types
 * Cannot (currently) serialize nested classes
 
 ## Usage
@@ -78,7 +79,7 @@ Value types
 
 ```csharp
 public static T Deserialize(Stream stream);
-public static void Serialize(T self, Stream stream);
+public static void Serialize(T self, Stream stream) => self.Serialize(stream);
 public static void Serialize(this ref T self, Stream stream);
 ```
 
@@ -86,6 +87,6 @@ Reference types
 
 ```csharp
 public static T Deserialize(Stream stream);
-public static void Serialize(this T self, Stream stream);
+public static void Serialize(this T self, Stream stream) => Serialize(ref self, stream);
 public static void Serialize(ref T self, Stream stream);
 ```

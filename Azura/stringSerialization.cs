@@ -39,11 +39,7 @@ public static class stringSerialization
     /// <param name="self">Value.</param>
     /// <param name="stream">Stream to write to.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Serialize(this string self, Stream stream)
-    {
-        string v = self;
-        Serialize(ref v, stream);
-    }
+    public static void Serialize(this string self, Stream stream) => Serialize(ref self, stream);
 
     /// <summary>
     /// Serializes a string.
