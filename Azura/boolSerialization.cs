@@ -29,8 +29,9 @@ public static class boolSerialization
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Serialize(bool self, Stream stream)
     {
-        SerializationInternals.IoBuffer[0] = self ? 1 : 0;
-        stream.Write(SerializationInternals.IoBuffer, 0, sizeof(byte));
+        byte[] lcl = SerializationInternals.IoBuffer;
+        lcl[0] = self ? 1 : 0;
+        stream.Write(lcl, 0, sizeof(byte));
     }
 
     /// <summary>
@@ -41,8 +42,9 @@ public static class boolSerialization
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Serialize(this ref bool self, Stream stream)
     {
-        SerializationInternals.IoBuffer[0] = self ? 1 : 0;
-        stream.Write(SerializationInternals.IoBuffer, 0, sizeof(byte));
+        byte[] lcl = SerializationInternals.IoBuffer;
+        lcl[0] = self ? 1 : 0;
+        stream.Write(lcl, 0, sizeof(byte));
     }
 
     /// <summary>

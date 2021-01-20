@@ -30,8 +30,9 @@ public static class decimalSerialization
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Serialize(decimal self, Stream stream)
     {
-        MemoryMarshal.Write(SerializationInternals.IoBuffer, ref self);
-        stream.Write(SerializationInternals.IoBuffer, 0, sizeof(decimal));
+        byte[] lcl = SerializationInternals.IoBuffer;
+        MemoryMarshal.Write(lcl, ref self);
+        stream.Write(lcl, 0, sizeof(decimal));
     }
 
     /// <summary>
@@ -42,8 +43,9 @@ public static class decimalSerialization
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Serialize(this ref decimal self, Stream stream)
     {
-        MemoryMarshal.Write(SerializationInternals.IoBuffer, ref self);
-        stream.Write(SerializationInternals.IoBuffer, 0, sizeof(decimal));
+        byte[] lcl = SerializationInternals.IoBuffer;
+        MemoryMarshal.Write(lcl, ref self);
+        stream.Write(lcl, 0, sizeof(decimal));
     }
 
     /// <summary>

@@ -35,8 +35,9 @@ public static class shortSerialization
     public static void Serialize(short self, Stream stream)
     {
         if (SerializationInternals._swap) self = BinaryPrimitives.ReverseEndianness(self);
-        MemoryMarshal.Write(SerializationInternals.IoBuffer, ref self);
-        stream.Write(SerializationInternals.IoBuffer, 0, sizeof(short));
+        byte[] lcl = SerializationInternals.IoBuffer;
+        MemoryMarshal.Write(lcl, ref self);
+        stream.Write(lcl, 0, sizeof(short));
     }
 
     /// <summary>
@@ -48,8 +49,9 @@ public static class shortSerialization
     public static void Serialize(this ref short self, Stream stream)
     {
         short v = SerializationInternals._swap ? BinaryPrimitives.ReverseEndianness(self) : self;
-        MemoryMarshal.Write(SerializationInternals.IoBuffer, ref v);
-        stream.Write(SerializationInternals.IoBuffer, 0, sizeof(short));
+        byte[] lcl = SerializationInternals.IoBuffer;
+        MemoryMarshal.Write(lcl, ref v);
+        stream.Write(lcl, 0, sizeof(short));
     }
 
     /// <summary>

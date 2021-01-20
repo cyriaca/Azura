@@ -30,8 +30,9 @@ public static class floatSerialization
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Serialize(float self, Stream stream)
     {
-        MemoryMarshal.Write(SerializationInternals.IoBuffer, ref self);
-        stream.Write(SerializationInternals.IoBuffer, 0, sizeof(float));
+        byte[] lcl = SerializationInternals.IoBuffer;
+        MemoryMarshal.Write(lcl, ref self);
+        stream.Write(lcl, 0, sizeof(float));
     }
 
     /// <summary>
@@ -42,8 +43,9 @@ public static class floatSerialization
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Serialize(this ref float self, Stream stream)
     {
-        MemoryMarshal.Write(SerializationInternals.IoBuffer, ref self);
-        stream.Write(SerializationInternals.IoBuffer, 0, sizeof(float));
+        byte[] lcl = SerializationInternals.IoBuffer;
+        MemoryMarshal.Write(lcl, ref self);
+        stream.Write(lcl, 0, sizeof(float));
     }
 
     /// <summary>

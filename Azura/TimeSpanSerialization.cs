@@ -37,8 +37,9 @@ namespace System
         {
             long value = *(long*)&self;
             if (SerializationInternals._swap) value = BinaryPrimitives.ReverseEndianness(value);
-            MemoryMarshal.Write(SerializationInternals.IoBuffer, ref value);
-            stream.Write(SerializationInternals.IoBuffer, 0, sizeof(long));
+            byte[] lcl = SerializationInternals.IoBuffer;
+            MemoryMarshal.Write(lcl, ref value);
+            stream.Write(lcl, 0, sizeof(long));
         }
 
         /// <summary>
@@ -51,8 +52,9 @@ namespace System
             long value;
             fixed (void* p = &self) value = *(long*)p;
             if (SerializationInternals._swap) value = BinaryPrimitives.ReverseEndianness(value);
-            MemoryMarshal.Write(SerializationInternals.IoBuffer, ref value);
-            stream.Write(SerializationInternals.IoBuffer, 0, sizeof(long));
+            byte[] lcl = SerializationInternals.IoBuffer;
+            MemoryMarshal.Write(lcl, ref value);
+            stream.Write(lcl, 0, sizeof(long));
         }
 
         /// <summary>

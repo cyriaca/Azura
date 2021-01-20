@@ -54,7 +54,7 @@ public static class stringSerialization
     public static void Serialize(ref string self, Stream stream)
     {
         int count = Encoding.UTF8.GetByteCount(self);
-        count.Serialize(stream);
+        intSerialization.Serialize(count, stream);
         byte[] buf = Shared.Rent(count);
         try
         {

@@ -31,8 +31,9 @@ namespace System
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Serialize(Guid self, Stream stream)
         {
-            MemoryMarshal.Write(SerializationInternals.IoBuffer, ref self);
-            stream.Write(SerializationInternals.IoBuffer, 0, sizeof(decimal));
+            byte[] lcl = SerializationInternals.IoBuffer;
+            MemoryMarshal.Write(lcl, ref self);
+            stream.Write(lcl, 0, sizeof(decimal));
         }
 
         /// <summary>
@@ -43,8 +44,9 @@ namespace System
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Serialize(this ref Guid self, Stream stream)
         {
-            MemoryMarshal.Write(SerializationInternals.IoBuffer, ref self);
-            stream.Write(SerializationInternals.IoBuffer, 0, sizeof(decimal));
+            byte[] lcl = SerializationInternals.IoBuffer;
+            MemoryMarshal.Write(lcl, ref self);
+            stream.Write(lcl, 0, sizeof(decimal));
         }
 
         /// <summary>

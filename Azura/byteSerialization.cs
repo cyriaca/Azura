@@ -29,8 +29,9 @@ public static class byteSerialization
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Serialize(byte self, Stream stream)
     {
-        SerializationInternals.IoBuffer[0] = self;
-        stream.Write(SerializationInternals.IoBuffer, 0, sizeof(byte));
+        byte[] lcl = SerializationInternals.IoBuffer;
+        lcl[0] = self;
+        stream.Write(lcl, 0, sizeof(byte));
     }
 
     /// <summary>
@@ -41,8 +42,9 @@ public static class byteSerialization
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Serialize(this ref byte self, Stream stream)
     {
-        SerializationInternals.IoBuffer[0] = self;
-        stream.Write(SerializationInternals.IoBuffer, 0, sizeof(byte));
+        byte[] lcl = SerializationInternals.IoBuffer;
+        lcl[0] = self;
+        stream.Write(lcl, 0, sizeof(byte));
     }
 
     /// <summary>

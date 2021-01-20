@@ -30,8 +30,9 @@ public static class doubleSerialization
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Serialize(double self, Stream stream)
     {
-        MemoryMarshal.Write(SerializationInternals.IoBuffer, ref self);
-        stream.Write(SerializationInternals.IoBuffer, 0, sizeof(double));
+        byte[] lcl = SerializationInternals.IoBuffer;
+        MemoryMarshal.Write(lcl, ref self);
+        stream.Write(lcl, 0, sizeof(double));
     }
 
     /// <summary>
@@ -42,8 +43,9 @@ public static class doubleSerialization
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Serialize(this ref double self, Stream stream)
     {
-        MemoryMarshal.Write(SerializationInternals.IoBuffer, ref self);
-        stream.Write(SerializationInternals.IoBuffer, 0, sizeof(double));
+        byte[] lcl = SerializationInternals.IoBuffer;
+        MemoryMarshal.Write(lcl, ref self);
+        stream.Write(lcl, 0, sizeof(double));
     }
 
     /// <summary>

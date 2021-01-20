@@ -18,16 +18,10 @@ public static class SerializationInternals
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static Span<byte> ReadBase8(this Stream stream)
     {
-        int tot = 0;
-        do
-        {
-            int read = stream.Read(IoBuffer, tot, sizeof(byte) - tot);
-            if (read == 0)
-                throw new EndOfStreamException(
-                    $"Failed to read required number of bytes! 0x{tot:X} read, 0x{sizeof(byte) - tot:X} left");
-            tot += read;
-        } while (tot < sizeof(byte));
-
+        int read = stream.Read(IoBuffer, 0, 1);
+        if (read == 0)
+            throw new EndOfStreamException(
+                "Failed to read required number of bytes! 0x0 read, 0x1 left");
         return IoBuffer;
     }
 
@@ -118,6 +112,8 @@ public static class SerializationInternals
         } while (left > 0);
     }
 
+    private const int _hardBufferSize = 128 * 1024;
+
     /// <summary>
     /// Read span.
     /// </summary>
@@ -134,14 +130,14 @@ public static class SerializationInternals
         var mainTarget = MemoryMarshal.Cast<T, byte>(target);
         int order = sizeof(T);
         int mainLen = count * order;
-        byte[] buf = ArrayPool<byte>.Shared.Rent(4096);
+        byte[] buf = ArrayPool<byte>.Shared.Rent(_hardBufferSize);
         var span = buf.AsSpan();
         try
         {
             int left = mainLen, tot = 0;
             do
             {
-                int read = stream.Read(buf, 0, Math.Min(4096, left));
+                int read = stream.Read(buf, 0, Math.Min(_hardBufferSize, left));
                 if (read == 0)
                     throw new ApplicationException(
                         $"Failed to read required number of bytes! 0x{tot:X} read, 0x{left:X} left");
@@ -218,7 +214,7 @@ public static class SerializationInternals
         if (count == 0)
             return;
         var mainTarget = MemoryMarshal.Cast<T, byte>(source);
-        byte[] buf = ArrayPool<byte>.Shared.Rent(4096);
+        byte[] buf = ArrayPool<byte>.Shared.Rent(_hardBufferSize);
         var span = buf.AsSpan();
         int order = sizeof(T);
         int left = count * order;
@@ -229,7 +225,7 @@ public static class SerializationInternals
             {
                 while (left > 0)
                 {
-                    int noSwapCur = Math.Min(left, 4096);
+                    int noSwapCur = Math.Min(left, _hardBufferSize);
                     mainTarget.Slice(tot, noSwapCur).CopyTo(buf);
                     stream.Write(buf, 0, noSwapCur);
                     left -= noSwapCur;
@@ -239,7 +235,7 @@ public static class SerializationInternals
                 return;
             }
 
-            int maxCount = 4096 / order * order;
+            int maxCount = _hardBufferSize / order * order;
             fixed (byte* p = &span.GetPinnableReference())
             {
                 while (left != 0)
