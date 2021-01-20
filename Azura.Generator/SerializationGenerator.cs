@@ -91,7 +91,7 @@ namespace {namespaceName}
                             bool elementValueType = elementTypeInfo is {IsValueType: true};
                             // Prims don't have much to gain, just ignore these
                             bool elementCanRef = !_primitives.Contains(symbol) &&
-                                                 (valueType || element.Member is FieldDeclarationSyntax);
+                                                 element.Member is not PropertyDeclarationSyntax;
                             sbDe.Append($"{symbol}Serialization.Deserialize(stream),");
                             if (elementCanRef)
                                 sbSe.Append(elementValueType
