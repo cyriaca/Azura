@@ -6,18 +6,25 @@
 | `Azura`           | [![NuGet](https://img.shields.io/nuget/v/Azura.svg)](https://www.nuget.org/packages/Azura/)|
 | `Azura.Generator` | [![NuGet](https://img.shields.io/nuget/v/Azura.Generator.svg)](https://www.nuget.org/packages/Azura.Generator/) |
 
-## Supported
+## Why?
 
-* Fields / properties (even init-only) on structs, classes, and records
-* Common BCL types
+Generating source code instead of relying on reflection is nice. For example,
+when using NativeAOT you should be able to strip reflection metadata and
+still have serialization work, as everything is hooked up at design time.
+
+Target use case is communication between game clients and third-party programs.
+
+* Supports fields / properties (including init-only) on structs/classes/records
+* Has default serializers for common BCL types
   - `byte` / `sbyte` / `ushort` / `short` / `uint` / `int` / `ulong` / `long`
   - `float` / `double` / `char` / `bool`
   - `Guid` / `TimeSpan` / `DateTime` / `decimal`
   - `string`
   - `T[]` / `List<T>` / `HashSet<T>` / `Dictionary<TKey, TValue>`
     - Includes faster path for arrays of primitives
-* Nullable types
-* Little-endian storage with native endianness conversion
+* Supports nullable types
+* Native endianness conversion (stored as little-endian)
+* `ref` passing of members when appropriate
 
 ## Limitations
 
