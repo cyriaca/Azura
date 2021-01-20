@@ -74,7 +74,18 @@ Custom serialization for existing library types can be added but requires
 manual implementation of the below signatures in a class under the target
 type's namespace named `<ClassName>Serialization`.
 
+Value types
+
+```csharp
+public static T Deserialize(Stream stream);
+public static void Serialize(T self, Stream stream);
+public static void Serialize(this ref T self, Stream stream);
+```
+
+Reference types
+
 ```csharp
 public static T Deserialize(Stream stream);
 public static void Serialize(this T self, Stream stream);
+public static void Serialize(ref T self, Stream stream);
 ```
