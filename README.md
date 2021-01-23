@@ -1,5 +1,5 @@
 # Azura
- source generation based serialization 
+ source generation based serialization
 
 | Package                | Release |
 |------------------------|---------|
@@ -22,7 +22,8 @@ Target use case is communication between game clients and third-party programs.
   - `string`
   - `T[]` / `List<T>` / `HashSet<T>` / `Dictionary<TKey, TValue>`
     - Includes faster path for arrays of primitives
-* Supports nullable types
+* Supports nullable types (value types, reference types in nullable context)
+* Supports enums as members (does not generate top-level serialization helpers)
 * Native endianness conversion (stored as little-endian)
 * `ref` passing of members when appropriate
 

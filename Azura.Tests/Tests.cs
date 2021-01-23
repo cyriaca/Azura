@@ -43,7 +43,15 @@ namespace Azura.Tests
             _ms.SetLength(0);
 
             // Record
-            var tr = new TestRecord {ByteValue = 8, UintValue = 0x69};
+            var tr = new TestRecord
+            {
+                ByteValue = 8,
+                UintValue = 0x69,
+                UintPleaseRefValue = 10,
+                StructPleaseRefValue = new TestStruct {Guid = Guid.NewGuid()},
+                EnumValue = TestRecord.TestEnum.B,
+                EnumValue2 = TestRecord.TestEnum.C
+            };
             tr.Serialize(_ms);
             _ms.Position = 0;
             Assert.AreEqual(tr, TestRecordSerialization.Deserialize(_ms));
@@ -64,13 +72,18 @@ namespace Azura.Tests
             int?[] arr3 = {3, null};
             HashSet<int> hs = new() {3, 4, 5};
             Dictionary<string, int?> korone = new() {{"one", 1}, {"i'm die", 2}, {"thank you forever", null}};
+            Dictionary<string, TestRecord.TestEnum?> migraine = new()
+            {
+                {"fucking", TestRecord.TestEnum.A}, {"deviants", TestRecord.TestEnum.B}
+            };
             var ta = new TestClassWithArray
             {
                 StringArrayValue = arr,
                 StructArrayValue2 = arr2,
                 IntArrayValue = arr3,
                 HashSet = hs,
-                Dictionary = korone
+                Dictionary = korone,
+                Dictionary3 = migraine
             };
             ta.Serialize(_ms);
             _ms.Position = 0;
@@ -82,6 +95,7 @@ namespace Azura.Tests
             Assert.AreEqual(arr3, resTa.IntArrayValue);
             Assert.AreEqual(hs, resTa.HashSet);
             Assert.AreEqual(korone, resTa.Dictionary);
+            Assert.AreEqual(migraine, resTa.Dictionary3);
             _ms.SetLength(0);
         }
     }

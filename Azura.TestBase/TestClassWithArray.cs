@@ -13,5 +13,6 @@ namespace Azura.TestBase
         [Azura] public HashSet<int>? HashSet { get; set; }
         [Azura] public Dictionary<string, int?>? Dictionary { get; set; }
         [Azura] public Dictionary<string, TestClass?>? Dictionary2 { get; set; }
+        [Azura] public Dictionary<string, TestRecord.TestEnum?>? Dictionary3 { get; set; }
     }
 }

@@ -61,6 +61,8 @@ namespace {namespaceName}
         public static {name} Deserialize(Stream stream)
         {{
             return new {name} {{");
+                var sbEx = new StringBuilder();
+
                 foreach (var element in elements)
                 {
                     sbDe.Append(@$"
@@ -92,21 +94,26 @@ namespace {namespaceName}
                             // Prims don't have much to gain, just ignore these
                             bool elementCanRef = !_primitives.Contains(symbol) &&
                                                  element.Member is not PropertyDeclarationSyntax;
-                            sbDe.Append($"{symbol}Serialization.Deserialize(stream),");
+                            var (deser, ser, ex) = CreateSerializerPair(elementTypeInfo, symbol);
+                            if (ex != null) sbEx.Append(ex);
+                            sbDe.Append($"{deser}(stream),");
                             if (elementCanRef)
                                 sbSe.Append(elementValueType
                                     ? nullable ? @$"
-            if(self.{element.Name} != null) {symbol}Serialization.Serialize(self.{element.Name}.Value, stream);"
+            if(self.{element.Name} != null) {ser}(self.{element.Name}.Value, stream);"
                                     : @$"
-            self.{element.Name}.Serialize(stream);"
-                                    : @$"
-            if(self.{element.Name} != null) {symbol}Serialization.Serialize(ref self.{element.Name}, stream);");
+            {ser}(ref self.{element.Name}, stream);"
+                                    : nullable
+                                        ? @$"
+            if(self.{element.Name} != null) {ser}(ref self.{element.Name}, stream);"
+                                        : @$"
+            {ser}(ref self.{element.Name}, stream);");
                             else
                                 sbSe.Append(elementValueType
                                     ? nullable ? @$"
-            if(self.{element.Name} != null) {symbol}Serialization.Serialize(self.{element.Name}.Value!, stream);"
+            if(self.{element.Name} != null) {ser}(self.{element.Name}.Value!, stream);"
                                     : @$"
-            {symbol}Serialization.Serialize(self.{element.Name}, stream);"
+            {ser}(self.{element.Name}, stream);"
                                     : @$"
             self.{element.Name}{(nullable ? "?" : "")}.Serialize(stream);");
 
@@ -115,15 +122,17 @@ namespace {namespaceName}
                         case MemberKind.Array:
                         {
                             var info = elementInfo[0];
+                            var (deser, ser, ex) = CreateSerializerPair(info.Type, symbol);
+                            if (ex != null) sbEx.Append(ex);
                             if (!info.Nullable && _primitives.Contains(symbol))
                                 sbDe.Append(
                                     $"{symbol}Serialization.DeserializeArray(stream, intSerialization.Deserialize(stream)),");
                             else
                                 sbDe.Append(info.Nullable
                                     ? info.ValueType
-                                        ? $"SerializationBase.DeserializeArrayValueNullable<{symbol}>(stream, intSerialization.Deserialize(stream), {symbol}Serialization.Deserialize),"
-                                        : $"SerializationBase.DeserializeArrayNullable<{symbol}>(stream, intSerialization.Deserialize(stream), {symbol}Serialization.Deserialize),"
-                                    : $"SerializationBase.DeserializeArray<{symbol}>(stream, intSerialization.Deserialize(stream), {symbol}Serialization.Deserialize),");
+                                        ? $"SerializationBase.DeserializeArrayValueNullable<{symbol}>(stream, intSerialization.Deserialize(stream), {deser}),"
+                                        : $"SerializationBase.DeserializeArrayNullable<{symbol}>(stream, intSerialization.Deserialize(stream), {deser}),"
+                                    : $"SerializationBase.DeserializeArray<{symbol}>(stream, intSerialization.Deserialize(stream), {deser}),");
                             if (nullable)
                                 sbSe.Append(@$"
             if(self.{element.Name} != default)
@@ -138,11 +147,11 @@ namespace {namespaceName}
                                 sbSe.Append(info.Nullable
                                     ? info.ValueType
                                         ? @$"
-            SerializationBase.SerializeArrayValueNullable<{symbol}>(self.{element.Name}, stream, {symbol}Serialization.Serialize);"
+            SerializationBase.SerializeArrayValueNullable<{symbol}>(self.{element.Name}, stream, {ser});"
                                         : @$"
-            SerializationBase.SerializeArrayNullable<{symbol}>(self.{element.Name}, stream, {symbol}Serialization.Serialize);"
+            SerializationBase.SerializeArrayNullable<{symbol}>(self.{element.Name}, stream, {ser});"
                                     : @$"
-            SerializationBase.SerializeArray<{symbol}>(self.{element.Name}, stream, {symbol}Serialization.Serialize);");
+            SerializationBase.SerializeArray<{symbol}>(self.{element.Name}, stream, {ser});");
                             if (nullable)
                                 sbSe.Append(@"
             }");
@@ -152,11 +161,13 @@ namespace {namespaceName}
                         {
                             var info = elementInfo[0];
                             symbol = info.Type.ToString().TrimEnd('?');
+                            var (deser, ser, ex) = CreateSerializerPair(info.Type, symbol);
+                            if (ex != null) sbEx.Append(ex);
                             sbDe.Append(info.Nullable
                                 ? info.ValueType
-                                    ? $"SerializationBase.DeserializeHashSetValueNullable<{symbol}>(stream, intSerialization.Deserialize(stream), {symbol}Serialization.Deserialize),"
-                                    : $"SerializationBase.DeserializeHashSetNullable<{symbol}>(stream, intSerialization.Deserialize(stream), {symbol}Serialization.Deserialize),"
-                                : $"SerializationBase.DeserializeHashSet<{symbol}>(stream, intSerialization.Deserialize(stream), {symbol}Serialization.Deserialize),");
+                                    ? $"SerializationBase.DeserializeHashSetValueNullable<{symbol}>(stream, intSerialization.Deserialize(stream), {deser}),"
+                                    : $"SerializationBase.DeserializeHashSetNullable<{symbol}>(stream, intSerialization.Deserialize(stream), {deser}),"
+                                : $"SerializationBase.DeserializeHashSet<{symbol}>(stream, intSerialization.Deserialize(stream), {deser}),");
                             if (nullable)
                                 sbSe.Append(@$"
             if(self.{element.Name} != default)
@@ -166,11 +177,11 @@ namespace {namespaceName}
                             sbSe.Append(info.Nullable
                                 ? info.ValueType
                                     ? @$"
-            SerializationBase.SerializeHashSetValueNullable<{symbol}>(self.{element.Name}, stream, {symbol}Serialization.Serialize);"
+            SerializationBase.SerializeHashSetValueNullable<{symbol}>(self.{element.Name}, stream, {ser});"
                                     : @$"
-            SerializationBase.SerializeHashSetNullable<{symbol}>(self.{element.Name}, stream, {symbol}Serialization.Serialize);"
+            SerializationBase.SerializeHashSetNullable<{symbol}>(self.{element.Name}, stream, {ser});"
                                 : @$"
-            SerializationBase.SerializeHashSet<{symbol}>(self.{element.Name}, stream, {symbol}Serialization.Serialize);");
+            SerializationBase.SerializeHashSet<{symbol}>(self.{element.Name}, stream, {ser});");
                             if (nullable)
                                 sbSe.Append(@"
             }");
@@ -180,11 +191,13 @@ namespace {namespaceName}
                         {
                             var info = elementInfo[0];
                             symbol = info.Type.ToString().TrimEnd('?');
+                            var (deser, ser, ex) = CreateSerializerPair(info.Type, symbol);
+                            if (ex != null) sbEx.Append(ex);
                             sbDe.Append(info.Nullable
                                 ? info.ValueType
-                                    ? $"SerializationBase.DeserializeListValueNullable<{symbol}>(stream, intSerialization.Deserialize(stream), {symbol}Serialization.Deserialize),"
-                                    : $"SerializationBase.DeserializeListNullable<{symbol}>(stream, intSerialization.Deserialize(stream), {symbol}Serialization.Deserialize),"
-                                : $"SerializationBase.DeserializeList<{symbol}>(stream, intSerialization.Deserialize(stream), {symbol}Serialization.Deserialize),");
+                                    ? $"SerializationBase.DeserializeListValueNullable<{symbol}>(stream, intSerialization.Deserialize(stream), {deser}),"
+                                    : $"SerializationBase.DeserializeListNullable<{symbol}>(stream, intSerialization.Deserialize(stream), {deser}),"
+                                : $"SerializationBase.DeserializeList<{symbol}>(stream, intSerialization.Deserialize(stream), {deser}),");
                             if (nullable)
                                 sbSe.Append(@$"
             if(self.{element.Name} != default)
@@ -194,11 +207,11 @@ namespace {namespaceName}
                             sbSe.Append(info.Nullable
                                 ? info.ValueType
                                     ? @$"
-            SerializationBase.SerializeListValueNullable<{symbol}>(self.{element.Name}, stream, {symbol}Serialization.Serialize);"
+            SerializationBase.SerializeListValueNullable<{symbol}>(self.{element.Name}, stream, {ser});"
                                     : @$"
-            SerializationBase.SerializeListNullable<{symbol}>(self.{element.Name}, stream, {symbol}Serialization.Serialize);"
+            SerializationBase.SerializeListNullable<{symbol}>(self.{element.Name}, stream, {ser});"
                                 : @$"
-            SerializationBase.SerializeList<{symbol}>(self.{element.Name}, stream, {symbol}Serialization.Serialize);");
+            SerializationBase.SerializeList<{symbol}>(self.{element.Name}, stream, {ser});");
                             if (nullable)
                                 sbSe.Append(@"
             }");
@@ -208,13 +221,17 @@ namespace {namespaceName}
                         {
                             var info = elementInfo[1];
                             symbol = info.Type.ToString().TrimEnd('?');
+                            var (deser, ser, ex) = CreateSerializerPair(info.Type, symbol);
+                            if (ex != null) sbEx.Append(ex);
                             var keyInfo = elementInfo[0];
                             string keySymbol = keyInfo.Type.ToString();
+                            var (kdeser, kser, ex2) = CreateSerializerPair(keyInfo.Type, keySymbol);
+                            if (ex != null) sbEx.Append(ex2);
                             sbDe.Append(info.Nullable
                                 ? info.ValueType
-                                    ? $"SerializationBase.DeserializeDictionaryValueNullable<{keySymbol}, {symbol}>(stream, intSerialization.Deserialize(stream), {keySymbol}Serialization.Deserialize, {symbol}Serialization.Deserialize),"
-                                    : $"SerializationBase.DeserializeDictionaryNullable<{keySymbol}, {symbol}>(stream, intSerialization.Deserialize(stream), {keySymbol}Serialization.Deserialize, {symbol}Serialization.Deserialize),"
-                                : $"SerializationBase.DeserializeDictionary<{keySymbol}, {symbol}>(stream, intSerialization.Deserialize(stream), {keySymbol}Serialization.Deserialize, {symbol}Serialization.Deserialize),");
+                                    ? $"SerializationBase.DeserializeDictionaryValueNullable<{keySymbol}, {symbol}>(stream, intSerialization.Deserialize(stream), {kdeser}, {deser}),"
+                                    : $"SerializationBase.DeserializeDictionaryNullable<{keySymbol}, {symbol}>(stream, intSerialization.Deserialize(stream), {kdeser}, {deser}),"
+                                : $"SerializationBase.DeserializeDictionary<{keySymbol}, {symbol}>(stream, intSerialization.Deserialize(stream), {kdeser}, {deser}),");
                             if (nullable)
                                 sbSe.Append(@$"
             if(self.{element.Name} != default)
@@ -224,11 +241,11 @@ namespace {namespaceName}
                             sbSe.Append(info.Nullable
                                 ? info.ValueType
                                     ? @$"
-            SerializationBase.SerializeDictionaryValueNullable<{keySymbol}, {symbol}>(self.{element.Name}, stream, {keySymbol}Serialization.Serialize, {symbol}Serialization.Serialize);"
+            SerializationBase.SerializeDictionaryValueNullable<{keySymbol}, {symbol}>(self.{element.Name}, stream, {kser}, {ser});"
                                     : @$"
-            SerializationBase.SerializeDictionaryNullable<{keySymbol}, {symbol}>(self.{element.Name}, stream, {keySymbol}Serialization.Serialize, {symbol}Serialization.Serialize);"
+            SerializationBase.SerializeDictionaryNullable<{keySymbol}, {symbol}>(self.{element.Name}, stream, {kser}, {ser});"
                                 : @$"
-            SerializationBase.SerializeDictionary<{keySymbol}, {symbol}>(self.{element.Name}, stream, {keySymbol}Serialization.Serialize, {symbol}Serialization.Serialize);");
+            SerializationBase.SerializeDictionary<{keySymbol}, {symbol}>(self.{element.Name}, stream, {kser}, {ser});");
                             if (nullable)
                                 sbSe.Append(@"
             }");
@@ -253,6 +270,8 @@ namespace {namespaceName}
         public static void Serialize(this ref {id} self, Stream stream)
         {{{sbSe}
         }}
+
+        {sbEx}
     }}"
                     : @$"
         public static void Serialize(this {id} self, Stream stream) => Serialize(ref self, stream);
@@ -261,12 +280,36 @@ namespace {namespaceName}
         public static void Serialize(ref {id} self, Stream stream)
         {{{sbSe}
         }}
+
+        {sbEx}
     }}");
                 if (namespaceName != null)
                     sbDe.Append(@"
 }");
                 context.AddSource($"{name}Serialization.cs", sbDe.ToString());
             }
+        }
+
+        private (string deser, string ser, string? helperMethods) CreateSerializerPair(ITypeSymbol? symbol,
+            string symbolText)
+        {
+            if (symbol is INamedTypeSymbol rsymbol && rsymbol.Name == "Nullable" && rsymbol.ContainingNamespace.Name == "System" &&
+                rsymbol.NullableAnnotation == NullableAnnotation.Annotated)
+                symbol = rsymbol.TypeArguments[0]; // Get value type type from nullable struct
+            if (symbol?.TypeKind == TypeKind.Enum)
+            {
+                string ek = (symbol as INamedTypeSymbol)!.EnumUnderlyingType!.ToString();
+                string gk = Guid.NewGuid().ToString().Replace('-', '_');
+                return ($"Deserialize_{gk}",
+                    $"Serialize_{gk}",
+                    @$"
+        private static {symbol} Deserialize_{gk}(Stream stream) => ({symbolText}){ek}Serialization.Deserialize(stream);
+        private static void Serialize_{gk}({symbolText} self, Stream stream) => self.Serialize_{gk}(stream);
+        private static void Serialize_{gk}(this ref {symbolText} self, Stream stream) => {ek}Serialization.Serialize(({ek})self, stream);");
+            }
+
+            return ($"{symbolText}Serialization.Deserialize",
+                $"{symbolText}Serialization.Serialize", null);
         }
 
         private static readonly HashSet<string> _primitives = new()
