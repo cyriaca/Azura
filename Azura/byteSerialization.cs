@@ -48,7 +48,7 @@ public static class byteSerialization
     /// <param name="self">Value.</param>
     /// <param name="stream">Stream to write to.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Serialize(this ref byte self, Stream stream)
+    public static void Serialize(this in byte self, Stream stream)
     {
         byte[] lcl = SerializationInternals.IoBuffer;
         lcl[0] = self;

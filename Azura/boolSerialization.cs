@@ -48,7 +48,7 @@ public static class boolSerialization
     /// <param name="self">Value.</param>
     /// <param name="stream">Stream to write to.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Serialize(this ref bool self, Stream stream)
+    public static void Serialize(this in bool self, Stream stream)
     {
         byte[] lcl = SerializationInternals.IoBuffer;
         lcl[0] = self ? 1 : 0;

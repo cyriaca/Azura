@@ -46,7 +46,7 @@ public static class stringSerialization
     /// <param name="self">Value.</param>
     /// <param name="stream">Stream to write to.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Serialize(this string self, Stream stream) => Serialize(ref self, stream);
+    public static void Serialize(this string self, Stream stream) => Serialize(in self, stream);
 
     /// <summary>
     /// Serializes a string.
@@ -54,7 +54,7 @@ public static class stringSerialization
     /// <param name="self">Value.</param>
     /// <param name="stream">Stream to write to.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Serialize(ref string self, Stream stream)
+    public static void Serialize(in string self, Stream stream)
     {
         int count = Encoding.UTF8.GetByteCount(self);
         intSerialization.Serialize(count, stream);

@@ -19,5 +19,5 @@ public class Serialization<T>
     /// </summary>
     /// <param name="t">Data type.</param>
     /// <param name="stream">Target stream.</param>
-    public delegate void Serialize(ref T t, Stream stream);
+    public delegate void Serialize(in T t, Stream stream);
 }

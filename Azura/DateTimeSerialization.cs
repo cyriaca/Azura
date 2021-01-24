@@ -59,7 +59,7 @@ namespace System
         /// <param name="self">Value.</param>
         /// <param name="stream">Stream to write to.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe void Serialize(this ref DateTime self, Stream stream)
+        public static unsafe void Serialize(this in DateTime self, Stream stream)
         {
             long value;
             fixed (void* p = &self) value = *(long*)p;

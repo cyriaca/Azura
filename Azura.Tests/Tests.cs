@@ -73,6 +73,9 @@ namespace Azura.Tests
             _ms.Position = 0;
             Assert.AreEqual(tr2, TestPartialRecordSerialization.Deserialize(_ms));
             Assert.AreEqual(_ms.Length, _ms.Position);
+            _ms.Position = 0;
+            Assert.AreEqual(tr2, new TestPartialRecord(new AzuraContext(_ms)));
+            Assert.AreEqual(_ms.Length, _ms.Position);
             _ms.SetLength(0);
 
             // Struct
@@ -80,6 +83,17 @@ namespace Azura.Tests
             ts.Serialize(_ms);
             _ms.Position = 0;
             Assert.AreEqual(ts, TestStructSerialization.Deserialize(_ms));
+            Assert.AreEqual(_ms.Length, _ms.Position);
+            _ms.SetLength(0);
+
+            // Struct (partial)
+            var ts2 = new TestPartialStruct {LongValue = 1010101010101, UshortValue = 66, Guid = Guid.NewGuid()};
+            ts2.Serialize(_ms);
+            _ms.Position = 0;
+            Assert.AreEqual(ts2, TestPartialStructSerialization.Deserialize(_ms));
+            Assert.AreEqual(_ms.Length, _ms.Position);
+            _ms.Position = 0;
+            Assert.AreEqual(ts2, new TestPartialStruct(new AzuraContext(_ms)));
             Assert.AreEqual(_ms.Length, _ms.Position);
             _ms.SetLength(0);
 

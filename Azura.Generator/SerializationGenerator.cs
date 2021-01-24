@@ -65,7 +65,7 @@ namespace Azura.Generator
                     symbol = symbol.TrimEnd('?');
                     if (nullable)
                         sbSe.Append($@"
-            boolSerialization.Serialize((self.{element.Name} != default), stream);");
+            boolSerialization.Serialize((self.{element.Name} != null), stream);");
                     bool useMemberRef = false;
                     string deStr;
                     switch (kind)
@@ -75,36 +75,40 @@ namespace Azura.Generator
                             var elementTypeInfo = ModelExtensions.GetTypeInfo(sem, element.Type).Type;
                             bool elementValueType = elementTypeInfo is {IsValueType: true};
                             // Prims don't have much to gain, just ignore these
-                            var (deser, ser, ex) = CreateSerializerPair(elementTypeInfo, symbol, name, out bool elementEnum);
+                            var (deser, ser, ex) =
+                                CreateSerializerPair(elementTypeInfo, symbol, name, out bool elementEnum);
                             useMemberRef = !_primitives.Contains(symbol) &&
-                                           element.Member is not PropertyDeclarationSyntax && !elementEnum;
+                                           element.Member is not PropertyDeclarationSyntax && !elementEnum && !nullable;
                             if (ex != null) sbEx.Append(ex);
                             if (useMemberRef && refConstructor)
                             {
-                                deStr = ($"{deser}(stream, out this.{element.Name})");
+                                deStr = $"{deser}(stream, out this.{element.Name})";
                             }
                             else
-                                deStr = ($"{deser}(stream)");
+                                deStr = $"{deser}(stream)";
 
                             if (useMemberRef)
                                 sbSe.Append(elementValueType
                                     ? nullable ? @$"
             if(self.{element.Name} != null) {ser}(self.{element.Name}.Value, stream);"
                                     : @$"
-            {ser}(ref self.{element.Name}, stream);"
+            {ser}(in self.{element.Name}, stream);"
                                     : nullable
                                         ? @$"
-            if(self.{element.Name} != null) {ser}(ref self.{element.Name}, stream);"
+            if(self.{element.Name} != null) {ser}(in self.{element.Name}, stream);"
                                         : @$"
-            {ser}(ref self.{element.Name}, stream);");
+            {ser}(in self.{element.Name}, stream);");
                             else
                                 sbSe.Append(elementValueType
                                     ? nullable ? @$"
             if(self.{element.Name} != null) {ser}(self.{element.Name}.Value!, stream);"
                                     : @$"
             {ser}(self.{element.Name}, stream);"
-                                    : @$"
-            self.{element.Name}{(nullable ? "?" : "")}.Serialize(stream);");
+                                    : nullable
+                                        ? @$"
+            if(self.{element.Name} != null) {ser}(self.{element.Name}, stream);"
+                                        : @$"
+            {ser}(self.{element.Name}, stream);");
 
                             break;
                         }
@@ -114,16 +118,14 @@ namespace Azura.Generator
                             var (deser, ser, ex) = CreateSerializerPair(info.Type, symbol, name, out _);
                             if (ex != null) sbEx.Append(ex);
                             if (!info.Nullable && _primitives.Contains(symbol))
-                                deStr = (
-                                    $"{symbol}Serialization.DeserializeArray(stream, intSerialization.Deserialize(stream))"
-                                );
+                                deStr =
+                                    $"{symbol}Serialization.DeserializeArray(stream, intSerialization.Deserialize(stream))";
                             else
-                                deStr = (info.Nullable
-                                        ? info.ValueType
-                                            ? $"SerializationBase.DeserializeArrayValueNullable<{symbol}>(stream, intSerialization.Deserialize(stream), {deser})"
-                                            : $"SerializationBase.DeserializeArrayNullable<{symbol}>(stream, intSerialization.Deserialize(stream), {deser})"
-                                        : $"SerializationBase.DeserializeArray<{symbol}>(stream, intSerialization.Deserialize(stream), {deser})"
-                                    );
+                                deStr = info.Nullable
+                                    ? info.ValueType
+                                        ? $"SerializationBase.DeserializeArrayValueNullable<{symbol}>(stream, intSerialization.Deserialize(stream), {deser})"
+                                        : $"SerializationBase.DeserializeArrayNullable<{symbol}>(stream, intSerialization.Deserialize(stream), {deser})"
+                                    : $"SerializationBase.DeserializeArray<{symbol}>(stream, intSerialization.Deserialize(stream), {deser})";
                             if (nullable)
                                 sbSe.Append(@$"
             if(self.{element.Name} != default)
@@ -154,12 +156,11 @@ namespace Azura.Generator
                             symbol = info.Type.ToString().TrimEnd('?');
                             var (deser, ser, ex) = CreateSerializerPair(info.Type, symbol, name, out _);
                             if (ex != null) sbEx.Append(ex);
-                            deStr = (info.Nullable
-                                    ? info.ValueType
-                                        ? $"SerializationBase.DeserializeHashSetValueNullable<{symbol}>(stream, intSerialization.Deserialize(stream), {deser})"
-                                        : $"SerializationBase.DeserializeHashSetNullable<{symbol}>(stream, intSerialization.Deserialize(stream), {deser})"
-                                    : $"SerializationBase.DeserializeHashSet<{symbol}>(stream, intSerialization.Deserialize(stream), {deser})"
-                                );
+                            deStr = info.Nullable
+                                ? info.ValueType
+                                    ? $"SerializationBase.DeserializeHashSetValueNullable<{symbol}>(stream, intSerialization.Deserialize(stream), {deser})"
+                                    : $"SerializationBase.DeserializeHashSetNullable<{symbol}>(stream, intSerialization.Deserialize(stream), {deser})"
+                                : $"SerializationBase.DeserializeHashSet<{symbol}>(stream, intSerialization.Deserialize(stream), {deser})";
                             if (nullable)
                                 sbSe.Append(@$"
             if(self.{element.Name} != default)
@@ -185,12 +186,11 @@ namespace Azura.Generator
                             symbol = info.Type.ToString().TrimEnd('?');
                             var (deser, ser, ex) = CreateSerializerPair(info.Type, symbol, name, out _);
                             if (ex != null) sbEx.Append(ex);
-                            deStr = (info.Nullable
-                                    ? info.ValueType
-                                        ? $"SerializationBase.DeserializeListValueNullable<{symbol}>(stream, intSerialization.Deserialize(stream), {deser})"
-                                        : $"SerializationBase.DeserializeListNullable<{symbol}>(stream, intSerialization.Deserialize(stream), {deser})"
-                                    : $"SerializationBase.DeserializeList<{symbol}>(stream, intSerialization.Deserialize(stream), {deser})"
-                                );
+                            deStr = info.Nullable
+                                ? info.ValueType
+                                    ? $"SerializationBase.DeserializeListValueNullable<{symbol}>(stream, intSerialization.Deserialize(stream), {deser})"
+                                    : $"SerializationBase.DeserializeListNullable<{symbol}>(stream, intSerialization.Deserialize(stream), {deser})"
+                                : $"SerializationBase.DeserializeList<{symbol}>(stream, intSerialization.Deserialize(stream), {deser})";
                             if (nullable)
                                 sbSe.Append(@$"
             if(self.{element.Name} != default)
@@ -220,12 +220,11 @@ namespace Azura.Generator
                             string keySymbol = keyInfo.Type.ToString();
                             var (kdeser, kser, ex2) = CreateSerializerPair(keyInfo.Type, keySymbol, name, out _);
                             if (ex != null) sbEx.Append(ex2);
-                            deStr = (info.Nullable
-                                    ? info.ValueType
-                                        ? $"SerializationBase.DeserializeDictionaryValueNullable<{keySymbol}, {symbol}>(stream, intSerialization.Deserialize(stream), {kdeser}, {deser})"
-                                        : $"SerializationBase.DeserializeDictionaryNullable<{keySymbol}, {symbol}>(stream, intSerialization.Deserialize(stream), {kdeser}, {deser})"
-                                    : $"SerializationBase.DeserializeDictionary<{keySymbol}, {symbol}>(stream, intSerialization.Deserialize(stream), {kdeser}, {deser})"
-                                );
+                            deStr = info.Nullable
+                                ? info.ValueType
+                                    ? $"SerializationBase.DeserializeDictionaryValueNullable<{keySymbol}, {symbol}>(stream, intSerialization.Deserialize(stream), {kdeser}, {deser})"
+                                    : $"SerializationBase.DeserializeDictionaryNullable<{keySymbol}, {symbol}>(stream, intSerialization.Deserialize(stream), {kdeser}, {deser})"
+                                : $"SerializationBase.DeserializeDictionary<{keySymbol}, {symbol}>(stream, intSerialization.Deserialize(stream), {kdeser}, {deser})";
                             if (nullable)
                                 sbSe.Append(@$"
             if(self.{element.Name} != default)
@@ -251,13 +250,13 @@ namespace Azura.Generator
 
                     if (refConstructor)
                     {
-                        if (nullable)
-                            sbDe.Append(@$"
-            if(boolSerialization.Deserialize(stream))");
                         sbDe.Append(useMemberRef
                             ? @$"
             {deStr};"
-                            : @$"
+                            : nullable
+                                ? @$"
+            this.{element.Name} = boolSerialization.Deserialize(stream) ? {deStr} : null;"
+                                : @$"
             this.{element.Name} = {deStr};");
                     }
                     else
@@ -280,42 +279,47 @@ using System.Runtime.CompilerServices;");
                     sbMain.Append(@$"
 namespace {namespaceName}
 {{");
+                string fullDe = refConstructor
+                    ? @$"new {name}(new AzuraContext(stream))"
+                    : @$"new {name} {{{sbDe}
+            }}";
                 sbMain.Append(@$"
     public static class {id}Serialization
     {{
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static {name} Deserialize(Stream stream)
-        {{");
-                sbMain.Append(refConstructor
-                    ? @$"
-            return new {name}(new AzuraContext(stream));"
-                    : @$"
-            return new {name} {{{sbDe}
-            }};");
-                sbMain.Append(@"
-        }");
+        {{
+            return {fullDe};
+        }}");
                 sbMain.Append(@$"
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Deserialize(Stream stream, out {name} self) => self = Deserialize(stream);
+        public static void Deserialize(Stream stream, out {name} self)
+        {{
+            self = {fullDe};
+        }}
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]");
                 sbMain.Append(valueType
                     ? @$"
-        public static void Serialize({id} self, Stream stream) => self.Serialize(stream);
+        public static void Serialize({id} self, Stream stream)
+        {{{sbSe}
+        }}
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 
-        public static void Serialize(this ref {id} self, Stream stream)
+        public static void Serialize(this in {id} self, Stream stream)
         {{{sbSe}
         }}
 
         {sbEx}
     }}"
                     : @$"
-        public static void Serialize(this {id} self, Stream stream) => Serialize(ref self, stream);
+        public static void Serialize(this {id} self, Stream stream)
+        {{{sbSe}
+        }}
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Serialize(ref {id} self, Stream stream)
+        public static void Serialize(in {id} self, Stream stream)
         {{{sbSe}
         }}
 
@@ -376,8 +380,8 @@ namespace {namespaceName}
                     @$"
         internal static {symbol} Deserialize_{gk}(Stream stream) => ({symbolText}){ek}Serialization.Deserialize(stream);
         internal static {symbol} Deserialize_{gk}(Stream stream, out {symbolText} self) => self = Deserialize_{gk}(stream);
-        internal static void Serialize_{gk}({symbolText} self, Stream stream) => self.Serialize_{gk}(stream);
-        internal static void Serialize_{gk}(this ref {symbolText} self, Stream stream) => {ek}Serialization.Serialize(({ek})self, stream);");
+        internal static void Serialize_{gk}({symbolText} self, Stream stream) => Serialize_{gk}(in self, stream);
+        internal static void Serialize_{gk}(in {symbolText} self, Stream stream) => {ek}Serialization.Serialize(({ek})self, stream);");
             }
 
             isEnum = false;

@@ -35,7 +35,7 @@ public static class SerializationBase
     /// <param name="serialize">Serializer method.</param>
     public static void SerializeArray<T>(Span<T> self, Stream stream, Serialization<T>.Serialize serialize)
     {
-        for (int i = 0; i < self.Length; i++) serialize(ref self[i], stream);
+        for (int i = 0; i < self.Length; i++) serialize(in self[i], stream);
     }
 
     /// <summary>
@@ -75,7 +75,7 @@ public static class SerializationBase
             if (t != null)
             {
                 var x = t.Value;
-                serialize(ref x, stream);
+                serialize(in x, stream);
             }
         }
     }
@@ -115,7 +115,7 @@ public static class SerializationBase
             hasValue.Serialize(stream);
             if (t != null)
             {
-                serialize(ref t!, stream);
+                serialize(in t!, stream);
             }
         }
     }
@@ -149,7 +149,7 @@ public static class SerializationBase
         foreach (var t in self)
         {
             var x = t;
-            serialize(ref x, stream);
+            serialize(in x, stream);
         }
     }
 
@@ -189,7 +189,7 @@ public static class SerializationBase
             if (t != null)
             {
                 var x = t.Value;
-                serialize(ref x, stream);
+                serialize(in x, stream);
             }
         }
     }
@@ -226,7 +226,7 @@ public static class SerializationBase
             if (t != null)
             {
                 var x = t;
-                serialize(ref x, stream);
+                serialize(in x, stream);
             }
         }
     }
@@ -260,7 +260,7 @@ public static class SerializationBase
         foreach (var t in self)
         {
             var x = t;
-            serialize(ref x, stream);
+            serialize(in x, stream);
         }
     }
 
@@ -296,7 +296,7 @@ public static class SerializationBase
             if (t != null)
             {
                 var x = t!.Value;
-                serialize(ref x, stream);
+                serialize(in x, stream);
             }
         }
     }
@@ -333,7 +333,7 @@ public static class SerializationBase
             if (t != null)
             {
                 var x = t;
-                serialize(ref x, stream);
+                serialize(in x, stream);
             }
         }
     }
@@ -371,9 +371,9 @@ public static class SerializationBase
         foreach (var t in self)
         {
             var x = t.Key;
-            serializeKey(ref x, stream);
+            serializeKey(in x, stream);
             var y = t.Value;
-            serializeValue(ref y, stream);
+            serializeValue(in y, stream);
         }
     }
 
@@ -413,13 +413,13 @@ public static class SerializationBase
         foreach (var t in self)
         {
             var x = t.Key;
-            serializeKey(ref x, stream);
+            serializeKey(in x, stream);
             bool hasValue = t.Value != null;
             hasValue.Serialize(stream);
             if (t.Value != null)
             {
                 var y = t.Value.Value;
-                serializeValue(ref y, stream);
+                serializeValue(in y, stream);
             }
         }
     }
@@ -458,13 +458,13 @@ public static class SerializationBase
         foreach (var t in self)
         {
             var x = t.Key;
-            serializeKey(ref x, stream);
+            serializeKey(in x, stream);
             bool hasValue = t.Value != null;
             hasValue.Serialize(stream);
             if (t.Value != null)
             {
                 var y = t.Value;
-                serializeValue(ref y, stream);
+                serializeValue(in y, stream);
             }
         }
     }

@@ -3,7 +3,7 @@ using System;
 namespace Azura.TestBase
 {
     [Azura]
-    public struct TestStruct
+    public partial struct TestPartialStruct
     {
         [Azura] public long LongValue;
         [Azura] public ushort? UshortValue;

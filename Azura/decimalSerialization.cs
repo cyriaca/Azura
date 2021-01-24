@@ -49,10 +49,11 @@ public static class decimalSerialization
     /// <param name="self">Value.</param>
     /// <param name="stream">Stream to write to.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Serialize(this ref decimal self, Stream stream)
+    public static void Serialize(this in decimal self, Stream stream)
     {
         byte[] lcl = SerializationInternals.IoBuffer;
-        MemoryMarshal.Write(lcl, ref self);
+        decimal self2 = self;
+        MemoryMarshal.Write(lcl, ref self2);
         stream.Write(lcl, 0, sizeof(decimal));
     }
 

@@ -54,7 +54,7 @@ public static class ushortSerialization
     /// <param name="self">Value.</param>
     /// <param name="stream">Stream to write to.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Serialize(this ref ushort self, Stream stream)
+    public static void Serialize(this in ushort self, Stream stream)
     {
         ushort v = SerializationInternals._swap ? BinaryPrimitives.ReverseEndianness(self) : self;
         byte[] lcl = SerializationInternals.IoBuffer;

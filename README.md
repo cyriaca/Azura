@@ -87,8 +87,8 @@ Value types
 ```csharp
 public static T Deserialize(Stream stream);
 public static void Deserialize(Stream stream, out T self) => self = Deserialize(stream);
-public static void Serialize(T self, Stream stream) => self.Serialize(stream);
-public static void Serialize(this ref T self, Stream stream);
+public static void Serialize(T self, Stream stream) => Serialize(in self, stream);
+public static void Serialize(this in T self, Stream stream);
 ```
 
 Reference types
@@ -96,6 +96,6 @@ Reference types
 ```csharp
 public static T Deserialize(Stream stream);
 public static void Deserialize(Stream stream, out T self) => self = Deserialize(stream);
-public static void Serialize(this T self, Stream stream) => Serialize(ref self, stream);
-public static void Serialize(ref T self, Stream stream);
+public static void Serialize(this T self, Stream stream) => Serialize(in self, stream);
+public static void Serialize(in T self, Stream stream);
 ```
