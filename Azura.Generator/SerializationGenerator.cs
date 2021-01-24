@@ -272,6 +272,7 @@ namespace Azura.Generator
                 var sbMain = new StringBuilder(@"
 #pragma warning disable 1591
 #nullable enable
+using Azura;
 using System;
 using System.IO;
 using System.Runtime.CompilerServices;");
