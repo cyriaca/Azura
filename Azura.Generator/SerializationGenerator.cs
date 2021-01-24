@@ -404,7 +404,8 @@ namespace {namespaceName}
             "bool",
             "System.Guid",
             "System.DateTime",
-            "System.TimeSpan"
+            "System.TimeSpan",
+            "decimal"
         };
 
         private enum MemberKind
