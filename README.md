@@ -27,11 +27,6 @@ Target use case is communication between game clients and third-party programs.
 * Supports nullable types (value types, reference types in nullable context)
 * Native endianness conversion (stored as little-endian)
 
-## Limitations
-
-* Cannot serialize generic types
-* Cannot (currently) serialize nested classes
-
 ## Usage
 
 0. Add generator library (includes base package, does not need to be explicitly included)
@@ -66,6 +61,13 @@ data.Serialize(stream);
 ```csharp
 var data = DataSerialization.Deserialize(stream);
 ```
+
+## Limitations
+
+## Pending features
+
+* Serialize generic types
+* Serialize nested classes
 
 ## Binary format
 
