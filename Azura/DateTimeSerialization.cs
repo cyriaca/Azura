@@ -24,7 +24,7 @@ namespace System
             if (SerializationInternals._swap)
             {
                 long value = BinaryPrimitives.ReverseEndianness(MemoryMarshal.Read<long>(stream.ReadBase64()));
-                return *(DateTime*)value;
+                return *(DateTime*)&value;
             }
 
             return MemoryMarshal.Read<DateTime>(stream.ReadBase64());

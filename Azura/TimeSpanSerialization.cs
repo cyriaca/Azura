@@ -22,7 +22,7 @@ namespace System
             if (SerializationInternals._swap)
             {
                 long value = BinaryPrimitives.ReverseEndianness(MemoryMarshal.Read<long>(stream.ReadBase64()));
-                return *(TimeSpan*)value;
+                return *(TimeSpan*)&value;
             }
 
             return MemoryMarshal.Read<TimeSpan>(stream.ReadBase64());
