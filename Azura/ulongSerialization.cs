@@ -27,6 +27,14 @@ public static class ulongSerialization
     }
 
     /// <summary>
+    /// Deserializes an unsigned 64-bit integer.
+    /// </summary>
+    /// <param name="stream">Stream to read from.</param>
+    /// <param name="self">Value.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void Deserialize(Stream stream, out ulong self) => self = Deserialize(stream);
+
+    /// <summary>
     /// Serializes an unsigned 64-bit integer.
     /// </summary>
     /// <param name="self">Value.</param>

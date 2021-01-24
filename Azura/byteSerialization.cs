@@ -22,6 +22,14 @@ public static class byteSerialization
     }
 
     /// <summary>
+    /// Deserializes an unsigned 8-bit integer.
+    /// </summary>
+    /// <param name="stream">Stream to read from.</param>
+    /// <param name="self">Value.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void Deserialize(Stream stream, out byte self) => self = stream.ReadBase8()[0];
+
+    /// <summary>
     /// Serializes an unsigned 8-bit integer.
     /// </summary>
     /// <param name="self">Value.</param>

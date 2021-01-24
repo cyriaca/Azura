@@ -24,6 +24,14 @@ namespace System
         }
 
         /// <summary>
+        /// Deserializes a guid.
+        /// </summary>
+        /// <param name="stream">Stream to read from.</param>
+        /// <param name="self">Value.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Deserialize(Stream stream, out Guid self) => self = Deserialize(stream);
+
+        /// <summary>
         /// Serializes a guid.
         /// </summary>
         /// <param name="self">Value.</param>

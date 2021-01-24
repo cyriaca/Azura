@@ -23,6 +23,14 @@ public static class doubleSerialization
     }
 
     /// <summary>
+    /// Deserializes a 64-bit floating-point value.
+    /// </summary>
+    /// <param name="stream">Stream to read from.</param>
+    /// <param name="self">Value.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void Deserialize(Stream stream, out double self) => self = Deserialize(stream);
+
+    /// <summary>
     /// Serializes a 64-bit floating-point value.
     /// </summary>
     /// <param name="self">Value.</param>

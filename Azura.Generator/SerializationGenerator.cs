@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Azura.Generator
@@ -22,10 +23,11 @@ namespace Azura.Generator
             foreach (var item in syntaxReceiver.Requests)
             {
                 var sem = context.Compilation.GetSemanticModel(item.Attribute.SyntaxTree);
-                string attr = sem.GetSymbolInfo(item.Attribute).Symbol!.ContainingSymbol.ToString();
+                string attr = ModelExtensions.GetSymbolInfo(sem, item.Attribute).Symbol!.ContainingSymbol.ToString();
                 if (attr != "Azura.AzuraAttribute") continue;
                 string name = item.Type.GetFullyQualifiedName();
                 bool valueType = item.Type is StructDeclarationSyntax;
+                bool refConstructor = item.Type.Modifiers.Any(SyntaxKind.PartialKeyword);
                 if (item.Type.TryGetParentSyntax(out BaseTypeDeclarationSyntax _))
                 {
                     // This type has a type in the parent hierarchy, which means this is a nested type
@@ -41,63 +43,50 @@ namespace Azura.Generator
                 if (string.IsNullOrWhiteSpace(namespaceName)) namespaceName = null;
                 var elements = new List<ForSerializationSyntaxReceiver.RequestElementItem>(item.Elements);
                 elements.RemoveAll(e =>
-                    sem.GetSymbolInfo(e.Attribute).Symbol?.ContainingSymbol.ToString() !=
+                    ModelExtensions.GetSymbolInfo(sem, e.Attribute).Symbol?.ContainingSymbol.ToString() !=
                     "Azura.AzuraAttribute");
-                var sbDe = new StringBuilder(@"
-#pragma warning disable 1591
-#nullable enable
-using System;
-using System.IO;
-using System.Runtime.CompilerServices;");
+                var sbDe = new StringBuilder();
                 var sbSe = new StringBuilder();
-                if (namespaceName != null)
-                    sbDe.Append(@$"
-namespace {namespaceName}
-{{");
-                sbDe.Append(@$"
-    public static class {id}Serialization
-    {{
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static {name} Deserialize(Stream stream)
-        {{
-            return new {name} {{");
                 var sbEx = new StringBuilder();
-
                 foreach (var element in elements)
                 {
-                    sbDe.Append(@$"
-                {element.Name} = ");
                     GetInfo(sem, element.Type, out MemberKind kind, out bool nullable, out var elementInfo);
                     if (kind == MemberKind.Unsupported)
                     {
                         context.ReportDiagnostic(Diagnostic.Create(
                             new DiagnosticDescriptor("CT0002", "Unsupported generic type",
-                                $"The Azura library does not support generating serialization sources for this type (failed on {name}:{element.Type} {sem.GetTypeInfo(element.Type).Type}).",
+                                $"The Azura library does not support generating serialization sources for this type (failed on {name}:{element.Type} {ModelExtensions.GetTypeInfo(sem, element.Type).Type}).",
                                 "Azura.Generator", DiagnosticSeverity.Error, true), null));
                         return;
                     }
 
-                    if (nullable)
-                        sbDe.Append("byteSerialization.Deserialize(stream) == 0 ? null : ");
-                    string symbol = $"{sem.GetSymbolInfo(element.Type).Symbol}";
+                    string symbol = $"{ModelExtensions.GetSymbolInfo(sem, element.Type).Symbol}";
                     if (kind == MemberKind.Array) symbol = symbol.TrimEnd('?').TrimEnd('[', ']');
                     symbol = symbol.TrimEnd('?');
                     if (nullable)
                         sbSe.Append($@"
-            byteSerialization.Serialize((self.{element.Name} != default ? (byte)1 : (byte)0), stream);");
+            boolSerialization.Serialize((self.{element.Name} != default), stream);");
+                    bool useMemberRef = false;
+                    string deStr;
                     switch (kind)
                     {
                         case MemberKind.Plain:
                         {
-                            var elementTypeInfo = sem.GetTypeInfo(element.Type).Type;
+                            var elementTypeInfo = ModelExtensions.GetTypeInfo(sem, element.Type).Type;
                             bool elementValueType = elementTypeInfo is {IsValueType: true};
                             // Prims don't have much to gain, just ignore these
-                            bool elementCanRef = !_primitives.Contains(symbol) &&
-                                                 element.Member is not PropertyDeclarationSyntax;
-                            var (deser, ser, ex) = CreateSerializerPair(elementTypeInfo, symbol);
+                            var (deser, ser, ex) = CreateSerializerPair(elementTypeInfo, symbol, name, out bool elementEnum);
+                            useMemberRef = !_primitives.Contains(symbol) &&
+                                           element.Member is not PropertyDeclarationSyntax && !elementEnum;
                             if (ex != null) sbEx.Append(ex);
-                            sbDe.Append($"{deser}(stream),");
-                            if (elementCanRef)
+                            if (useMemberRef && refConstructor)
+                            {
+                                deStr = ($"{deser}(stream, out this.{element.Name})");
+                            }
+                            else
+                                deStr = ($"{deser}(stream)");
+
+                            if (useMemberRef)
                                 sbSe.Append(elementValueType
                                     ? nullable ? @$"
             if(self.{element.Name} != null) {ser}(self.{element.Name}.Value, stream);"
@@ -122,17 +111,19 @@ namespace {namespaceName}
                         case MemberKind.Array:
                         {
                             var info = elementInfo[0];
-                            var (deser, ser, ex) = CreateSerializerPair(info.Type, symbol);
+                            var (deser, ser, ex) = CreateSerializerPair(info.Type, symbol, name, out _);
                             if (ex != null) sbEx.Append(ex);
                             if (!info.Nullable && _primitives.Contains(symbol))
-                                sbDe.Append(
-                                    $"{symbol}Serialization.DeserializeArray(stream, intSerialization.Deserialize(stream)),");
+                                deStr = (
+                                    $"{symbol}Serialization.DeserializeArray(stream, intSerialization.Deserialize(stream))"
+                                );
                             else
-                                sbDe.Append(info.Nullable
-                                    ? info.ValueType
-                                        ? $"SerializationBase.DeserializeArrayValueNullable<{symbol}>(stream, intSerialization.Deserialize(stream), {deser}),"
-                                        : $"SerializationBase.DeserializeArrayNullable<{symbol}>(stream, intSerialization.Deserialize(stream), {deser}),"
-                                    : $"SerializationBase.DeserializeArray<{symbol}>(stream, intSerialization.Deserialize(stream), {deser}),");
+                                deStr = (info.Nullable
+                                        ? info.ValueType
+                                            ? $"SerializationBase.DeserializeArrayValueNullable<{symbol}>(stream, intSerialization.Deserialize(stream), {deser})"
+                                            : $"SerializationBase.DeserializeArrayNullable<{symbol}>(stream, intSerialization.Deserialize(stream), {deser})"
+                                        : $"SerializationBase.DeserializeArray<{symbol}>(stream, intSerialization.Deserialize(stream), {deser})"
+                                    );
                             if (nullable)
                                 sbSe.Append(@$"
             if(self.{element.Name} != default)
@@ -161,13 +152,14 @@ namespace {namespaceName}
                         {
                             var info = elementInfo[0];
                             symbol = info.Type.ToString().TrimEnd('?');
-                            var (deser, ser, ex) = CreateSerializerPair(info.Type, symbol);
+                            var (deser, ser, ex) = CreateSerializerPair(info.Type, symbol, name, out _);
                             if (ex != null) sbEx.Append(ex);
-                            sbDe.Append(info.Nullable
-                                ? info.ValueType
-                                    ? $"SerializationBase.DeserializeHashSetValueNullable<{symbol}>(stream, intSerialization.Deserialize(stream), {deser}),"
-                                    : $"SerializationBase.DeserializeHashSetNullable<{symbol}>(stream, intSerialization.Deserialize(stream), {deser}),"
-                                : $"SerializationBase.DeserializeHashSet<{symbol}>(stream, intSerialization.Deserialize(stream), {deser}),");
+                            deStr = (info.Nullable
+                                    ? info.ValueType
+                                        ? $"SerializationBase.DeserializeHashSetValueNullable<{symbol}>(stream, intSerialization.Deserialize(stream), {deser})"
+                                        : $"SerializationBase.DeserializeHashSetNullable<{symbol}>(stream, intSerialization.Deserialize(stream), {deser})"
+                                    : $"SerializationBase.DeserializeHashSet<{symbol}>(stream, intSerialization.Deserialize(stream), {deser})"
+                                );
                             if (nullable)
                                 sbSe.Append(@$"
             if(self.{element.Name} != default)
@@ -191,13 +183,14 @@ namespace {namespaceName}
                         {
                             var info = elementInfo[0];
                             symbol = info.Type.ToString().TrimEnd('?');
-                            var (deser, ser, ex) = CreateSerializerPair(info.Type, symbol);
+                            var (deser, ser, ex) = CreateSerializerPair(info.Type, symbol, name, out _);
                             if (ex != null) sbEx.Append(ex);
-                            sbDe.Append(info.Nullable
-                                ? info.ValueType
-                                    ? $"SerializationBase.DeserializeListValueNullable<{symbol}>(stream, intSerialization.Deserialize(stream), {deser}),"
-                                    : $"SerializationBase.DeserializeListNullable<{symbol}>(stream, intSerialization.Deserialize(stream), {deser}),"
-                                : $"SerializationBase.DeserializeList<{symbol}>(stream, intSerialization.Deserialize(stream), {deser}),");
+                            deStr = (info.Nullable
+                                    ? info.ValueType
+                                        ? $"SerializationBase.DeserializeListValueNullable<{symbol}>(stream, intSerialization.Deserialize(stream), {deser})"
+                                        : $"SerializationBase.DeserializeListNullable<{symbol}>(stream, intSerialization.Deserialize(stream), {deser})"
+                                    : $"SerializationBase.DeserializeList<{symbol}>(stream, intSerialization.Deserialize(stream), {deser})"
+                                );
                             if (nullable)
                                 sbSe.Append(@$"
             if(self.{element.Name} != default)
@@ -221,17 +214,18 @@ namespace {namespaceName}
                         {
                             var info = elementInfo[1];
                             symbol = info.Type.ToString().TrimEnd('?');
-                            var (deser, ser, ex) = CreateSerializerPair(info.Type, symbol);
+                            var (deser, ser, ex) = CreateSerializerPair(info.Type, symbol, name, out _);
                             if (ex != null) sbEx.Append(ex);
                             var keyInfo = elementInfo[0];
                             string keySymbol = keyInfo.Type.ToString();
-                            var (kdeser, kser, ex2) = CreateSerializerPair(keyInfo.Type, keySymbol);
+                            var (kdeser, kser, ex2) = CreateSerializerPair(keyInfo.Type, keySymbol, name, out _);
                             if (ex != null) sbEx.Append(ex2);
-                            sbDe.Append(info.Nullable
-                                ? info.ValueType
-                                    ? $"SerializationBase.DeserializeDictionaryValueNullable<{keySymbol}, {symbol}>(stream, intSerialization.Deserialize(stream), {kdeser}, {deser}),"
-                                    : $"SerializationBase.DeserializeDictionaryNullable<{keySymbol}, {symbol}>(stream, intSerialization.Deserialize(stream), {kdeser}, {deser}),"
-                                : $"SerializationBase.DeserializeDictionary<{keySymbol}, {symbol}>(stream, intSerialization.Deserialize(stream), {kdeser}, {deser}),");
+                            deStr = (info.Nullable
+                                    ? info.ValueType
+                                        ? $"SerializationBase.DeserializeDictionaryValueNullable<{keySymbol}, {symbol}>(stream, intSerialization.Deserialize(stream), {kdeser}, {deser})"
+                                        : $"SerializationBase.DeserializeDictionaryNullable<{keySymbol}, {symbol}>(stream, intSerialization.Deserialize(stream), {kdeser}, {deser})"
+                                    : $"SerializationBase.DeserializeDictionary<{keySymbol}, {symbol}>(stream, intSerialization.Deserialize(stream), {kdeser}, {deser})"
+                                );
                             if (nullable)
                                 sbSe.Append(@$"
             if(self.{element.Name} != default)
@@ -254,14 +248,58 @@ namespace {namespaceName}
                         default:
                             throw new ArgumentOutOfRangeException();
                     }
+
+                    if (refConstructor)
+                    {
+                        if (nullable)
+                            sbDe.Append(@$"
+            if(boolSerialization.Deserialize(stream))");
+                        sbDe.Append(useMemberRef
+                            ? @$"
+            {deStr};"
+                            : @$"
+            this.{element.Name} = {deStr};");
+                    }
+                    else
+                    {
+                        sbDe.Append(@$"
+                {element.Name} = ");
+                        if (nullable)
+                            sbDe.Append("!boolSerialization.Deserialize(stream) ? null : ");
+                        sbDe.Append($"{deStr},");
+                    }
                 }
 
-                sbDe.Append(@"
-            };
-        }
+                var sbMain = new StringBuilder(@"
+#pragma warning disable 1591
+#nullable enable
+using System;
+using System.IO;
+using System.Runtime.CompilerServices;");
+                if (namespaceName != null)
+                    sbMain.Append(@$"
+namespace {namespaceName}
+{{");
+                sbMain.Append(@$"
+    public static class {id}Serialization
+    {{
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static {name} Deserialize(Stream stream)
+        {{");
+                sbMain.Append(refConstructor
+                    ? @$"
+            return new {name}(new AzuraContext(stream));"
+                    : @$"
+            return new {name} {{{sbDe}
+            }};");
+                sbMain.Append(@"
+        }");
+                sbMain.Append(@$"
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Deserialize(Stream stream, out {name} self) => self = Deserialize(stream);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]");
-                sbDe.Append(valueType
+                sbMain.Append(valueType
                     ? @$"
         public static void Serialize({id} self, Stream stream) => self.Serialize(stream);
 
@@ -284,32 +322,66 @@ namespace {namespaceName}
         {sbEx}
     }}");
                 if (namespaceName != null)
-                    sbDe.Append(@"
+                    sbMain.Append(@"
 }");
-                context.AddSource($"{name}Serialization.cs", sbDe.ToString());
+                context.AddSource($"{name}Serialization.cs", sbMain.ToString());
+                if (refConstructor)
+                {
+                    string type = item.Type switch
+                    {
+                        ClassDeclarationSyntax => "class",
+                        StructDeclarationSyntax => "struct",
+                        RecordDeclarationSyntax => "record",
+                        _ => throw new ArgumentOutOfRangeException()
+                    };
+                    var sbRef = new StringBuilder(@$"
+#pragma warning disable 1591
+#nullable enable
+using Azura;
+using System;
+using System.IO;");
+                    if (namespaceName != null)
+                        sbRef.Append(@$"
+namespace {namespaceName}
+{{");
+                    sbRef.Append(@$"
+    public partial {type} {id}
+    {{
+        public {id}(AzuraContext context)
+        {{
+            Stream stream = context.Stream;{sbDe}
+        }}
+    }}");
+                    if (namespaceName != null)
+                        sbRef.Append(@"
+}");
+                    context.AddSource($"{name}.Generated.cs", sbRef.ToString());
+                }
             }
         }
 
         private (string deser, string ser, string? helperMethods) CreateSerializerPair(ITypeSymbol? symbol,
-            string symbolText)
+            string symbolText, string name, out bool isEnum)
         {
-            if (symbol is INamedTypeSymbol rsymbol && rsymbol.Name == "Nullable" && rsymbol.ContainingNamespace.Name == "System" &&
-                rsymbol.NullableAnnotation == NullableAnnotation.Annotated)
+            if (symbol is INamedTypeSymbol rsymbol && rsymbol.Name == "Nullable" &&
+                rsymbol.ContainingNamespace.Name == "System")
                 symbol = rsymbol.TypeArguments[0]; // Get value type type from nullable struct
             if (symbol?.TypeKind == TypeKind.Enum)
             {
+                isEnum = true;
                 string ek = (symbol as INamedTypeSymbol)!.EnumUnderlyingType!.ToString();
                 string gk = Guid.NewGuid().ToString().Replace('-', '_');
-                return ($"Deserialize_{gk}",
-                    $"Serialize_{gk}",
+                return ($"{name}Serialization.Deserialize_{gk}",
+                    $"{name}Serialization.Serialize_{gk}",
                     @$"
-        private static {symbol} Deserialize_{gk}(Stream stream) => ({symbolText}){ek}Serialization.Deserialize(stream);
-        private static void Serialize_{gk}({symbolText} self, Stream stream) => self.Serialize_{gk}(stream);
-        private static void Serialize_{gk}(this ref {symbolText} self, Stream stream) => {ek}Serialization.Serialize(({ek})self, stream);");
+        internal static {symbol} Deserialize_{gk}(Stream stream) => ({symbolText}){ek}Serialization.Deserialize(stream);
+        internal static {symbol} Deserialize_{gk}(Stream stream, out {symbolText} self) => self = Deserialize_{gk}(stream);
+        internal static void Serialize_{gk}({symbolText} self, Stream stream) => self.Serialize_{gk}(stream);
+        internal static void Serialize_{gk}(this ref {symbolText} self, Stream stream) => {ek}Serialization.Serialize(({ek})self, stream);");
             }
 
-            return ($"{symbolText}Serialization.Deserialize",
-                $"{symbolText}Serialization.Serialize", null);
+            isEnum = false;
+            return ($"{symbolText}Serialization.Deserialize", $"{symbolText}Serialization.Serialize", null);
         }
 
         private static readonly HashSet<string> _primitives = new()
@@ -351,7 +423,7 @@ namespace {namespaceName}
         private static void GetInfo(SemanticModel semanticModel, TypeSyntax typeSyntax,
             out MemberKind kind, out bool nullable, out List<ElementInfo> elements)
         {
-            var info = semanticModel.GetTypeInfo(typeSyntax);
+            var info = ModelExtensions.GetTypeInfo(semanticModel, typeSyntax);
             nullable = typeSyntax is NullableTypeSyntax ||
                        info.Type!.NullableAnnotation == NullableAnnotation.Annotated;
             ITypeSymbol type = nullable

@@ -27,6 +27,14 @@ public static class ushortSerialization
     }
 
     /// <summary>
+    /// Deserializes an unsigned 16-bit integer.
+    /// </summary>
+    /// <param name="stream">Stream to read from.</param>
+    /// <param name="self">Value.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void Deserialize(Stream stream, out ushort self) => self = Deserialize(stream);
+
+    /// <summary>
     /// Serializes an unsigned 16-bit integer.
     /// </summary>
     /// <param name="self">Value.</param>

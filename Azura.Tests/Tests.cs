@@ -50,11 +50,29 @@ namespace Azura.Tests
                 UintPleaseRefValue = 10,
                 StructPleaseRefValue = new TestStruct {Guid = Guid.NewGuid()},
                 EnumValue = TestRecord.TestEnum.B,
-                EnumValue2 = TestRecord.TestEnum.C
+                EnumValue2 = TestRecord.TestEnum.C,
+                EnumValue3 = TestRecord.TestEnum.B
             };
             tr.Serialize(_ms);
             _ms.Position = 0;
             Assert.AreEqual(tr, TestRecordSerialization.Deserialize(_ms));
+            Assert.AreEqual(_ms.Length, _ms.Position);
+            _ms.SetLength(0);
+
+            // Record (partial)
+            var tr2 = new TestPartialRecord
+            {
+                ByteValue = 8,
+                UintValue = 0x69,
+                UintPleaseRefValue = 10,
+                StructPleaseRefValue = new TestStruct {Guid = Guid.NewGuid()},
+                EnumValue = TestPartialRecord.TestEnum.B,
+                EnumValue2 = TestPartialRecord.TestEnum.C,
+                EnumValue3 = TestPartialRecord.TestEnum.B
+            };
+            tr2.Serialize(_ms);
+            _ms.Position = 0;
+            Assert.AreEqual(tr2, TestPartialRecordSerialization.Deserialize(_ms));
             Assert.AreEqual(_ms.Length, _ms.Position);
             _ms.SetLength(0);
 

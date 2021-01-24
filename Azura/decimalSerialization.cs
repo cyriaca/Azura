@@ -23,6 +23,14 @@ public static class decimalSerialization
     }
 
     /// <summary>
+    /// Deserializes a 128-bit fixed-point value.
+    /// </summary>
+    /// <param name="stream">Stream to read from.</param>
+    /// <param name="self">Value.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void Deserialize(Stream stream, out decimal self) => self = Deserialize(stream);
+
+    /// <summary>
     /// Serializes a 128-bit fixed-point value.
     /// </summary>
     /// <param name="self">Value.</param>

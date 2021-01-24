@@ -3,6 +3,7 @@
 
 using System.Buffers.Binary;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace System
@@ -17,6 +18,7 @@ namespace System
         /// </summary>
         /// <param name="stream">Stream to read from.</param>
         /// <returns>Value.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe TimeSpan Deserialize(Stream stream)
         {
             if (SerializationInternals._swap)
@@ -29,10 +31,19 @@ namespace System
         }
 
         /// <summary>
+        /// Deserializes a timespan.
+        /// </summary>
+        /// <param name="stream">Stream to read from.</param>
+        /// <param name="self">Value.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Deserialize(Stream stream, out TimeSpan self) => self = Deserialize(stream);
+
+        /// <summary>
         /// Serializes a timespan.
         /// </summary>
         /// <param name="self">Value.</param>
         /// <param name="stream">Stream to write to.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe void Serialize(TimeSpan self, Stream stream)
         {
             long value = *(long*)&self;
@@ -47,6 +58,7 @@ namespace System
         /// </summary>
         /// <param name="self">Value.</param>
         /// <param name="stream">Stream to write to.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe void Serialize(this ref TimeSpan self, Stream stream)
         {
             long value;

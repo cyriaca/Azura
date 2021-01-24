@@ -34,6 +34,13 @@ public static class stringSerialization
     }
 
     /// <summary>
+    /// Deserializes a string.
+    /// </summary>
+    /// <param name="stream">Stream to read from.</param>
+    /// <param name="self">Value.</param>
+    public static void Deserialize(Stream stream, out string self) => self = Deserialize(stream);
+
+    /// <summary>
     /// Serializes a string.
     /// </summary>
     /// <param name="self">Value.</param>

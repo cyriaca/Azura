@@ -22,6 +22,14 @@ public static class boolSerialization
     }
 
     /// <summary>
+    /// Deserializes a boolean.
+    /// </summary>
+    /// <param name="stream">Stream to read from.</param>
+    /// <param name="self">Value.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void Deserialize(Stream stream, out bool self) => self = stream.ReadBase8()[0] != 0;
+
+    /// <summary>
     /// Serializes a boolean.
     /// </summary>
     /// <param name="self">Value.</param>

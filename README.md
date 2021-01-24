@@ -25,11 +25,11 @@ Target use case is communication between game clients and third-party programs.
 * Supports nullable types (value types, reference types in nullable context)
 * Supports enums as members (does not generate top-level serialization helpers)
 * Native endianness conversion (stored as little-endian)
-* `ref` passing of members when appropriate
-
+* Generates custom constructor on `partial` with signature `T(Azura.AzuraContext context)`
+  for potential `out` initialization of members
+* `ref` / `out` passing of members when appropriate (field of non-primitive/non-enum type)
 ## Limitations
 
-* Type must have parameterless constructor to support serializer generation
 * Cannot serialize generic types
 * Cannot (currently) serialize nested classes
 
@@ -87,6 +87,7 @@ Value types
 
 ```csharp
 public static T Deserialize(Stream stream);
+public static void Deserialize(Stream stream, out T self) => self = Deserialize(stream);
 public static void Serialize(T self, Stream stream) => self.Serialize(stream);
 public static void Serialize(this ref T self, Stream stream);
 ```
@@ -95,6 +96,7 @@ Reference types
 
 ```csharp
 public static T Deserialize(Stream stream);
+public static void Deserialize(Stream stream, out T self) => self = Deserialize(stream);
 public static void Serialize(this T self, Stream stream) => Serialize(ref self, stream);
 public static void Serialize(ref T self, Stream stream);
 ```

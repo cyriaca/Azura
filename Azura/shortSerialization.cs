@@ -27,6 +27,14 @@ public static class shortSerialization
     }
 
     /// <summary>
+    /// Deserializes a signed 16-bit integer.
+    /// </summary>
+    /// <param name="stream">Stream to read from.</param>
+    /// <param name="self">Value.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void Deserialize(Stream stream, out short self) => self = Deserialize(stream);
+
+    /// <summary>
     /// Serializes a signed 16-bit integer.
     /// </summary>
     /// <param name="self">Value.</param>

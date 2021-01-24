@@ -22,6 +22,14 @@ public static class sbyteSerialization
     }
 
     /// <summary>
+    /// Deserializes a signed 8-bit integer.
+    /// </summary>
+    /// <param name="stream">Stream to read from.</param>
+    /// <param name="self">Value.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void Deserialize(Stream stream, out sbyte self) => self = (sbyte)stream.ReadBase8()[0];
+
+    /// <summary>
     /// Serializes a signed 8-bit integer.
     /// </summary>
     /// <param name="self">Value.</param>
