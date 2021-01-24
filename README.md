@@ -14,20 +14,19 @@ still have serialization work, as everything is hooked up at design time.
 
 Target use case is communication between game clients and third-party programs.
 
-* Supports fields / properties (including init-only) on structs/classes/records
+* Generates serialization constructs for structs/classes/records
+  - Get-only properties / readonly fields are supported if type has `partial`
 * Has default serializers for common BCL types
   - `byte` / `sbyte` / `ushort` / `short` / `uint` / `int` / `ulong` / `long`
+    - Also supports enum types
   - `float` / `double` / `char` / `bool`
   - `Guid` / `TimeSpan` / `DateTime` / `decimal`
   - `string`
   - `T[]` / `List<T>` / `HashSet<T>` / `Dictionary<TKey, TValue>`
     - Includes faster path for arrays of primitives
 * Supports nullable types (value types, reference types in nullable context)
-* Supports enums as members (does not generate top-level serialization helpers)
 * Native endianness conversion (stored as little-endian)
-* Generates custom constructor on `partial` with signature `T(Azura.AzuraContext context)`
-  for potential `out` initialization of members
-* `ref` / `out` passing of members when appropriate (field of non-primitive/non-enum type)
+
 ## Limitations
 
 * Cannot serialize generic types

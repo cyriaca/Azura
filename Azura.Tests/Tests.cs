@@ -67,8 +67,7 @@ namespace Azura.Tests
                 UintPleaseRefValue = 10,
                 StructPleaseRefValue = new TestStruct {Guid = Guid.NewGuid()},
                 EnumValue = TestPartialRecord.TestEnum.B,
-                EnumValue2 = TestPartialRecord.TestEnum.C,
-                EnumValue3 = TestPartialRecord.TestEnum.B
+                EnumValue2 = TestPartialRecord.TestEnum.C
             };
             tr2.Serialize(_ms);
             _ms.Position = 0;

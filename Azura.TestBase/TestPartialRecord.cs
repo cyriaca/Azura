@@ -11,8 +11,8 @@ namespace Azura.TestBase
 
         [Azura] public TestEnum EnumValue2;
 
-        [Azura] public TestEnum? EnumValue3;
-        [Azura] public TestStruct StructProperty { get; init; }
+        [Azura] public readonly TestEnum? EnumValue3;
+        [Azura] public TestStruct StructProperty { get; }
 
         public TestPartialRecord()
         {
