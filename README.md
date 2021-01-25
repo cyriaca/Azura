@@ -64,9 +64,10 @@ var data = DataSerialization.Deserialize(stream);
 
 ## Limitations
 
+* Cannot serialize generic types
+
 ## Pending features
 
-* Serialize generic types
 * Serialize nested classes
 
 ## Binary format
