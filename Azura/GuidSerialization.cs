@@ -20,7 +20,11 @@ namespace System
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Guid Deserialize(Stream stream)
         {
-            return MemoryMarshal.Read<Guid>(stream.ReadBase128());
+            int a = intSerialization.Deserialize(stream);
+            short b = shortSerialization.Deserialize(stream);
+            short c = shortSerialization.Deserialize(stream);
+            Span<byte> d = stream.ReadBase64();
+            return new Guid(a, b, c, d[0], d[1], d[2], d[3], d[4], d[5], d[6], d[7]);
         }
 
         /// <summary>
@@ -41,6 +45,21 @@ namespace System
         {
             byte[] lcl = SerializationInternals.IoBuffer;
             MemoryMarshal.Write(lcl, ref self);
+            if (SerializationInternals._swap)
+            {
+                byte t = lcl[0];
+                lcl[0] = lcl[3];
+                lcl[3] = t;
+                t = lcl[1];
+                lcl[1] = lcl[2];
+                lcl[2] = t;
+                t = lcl[4];
+                lcl[4] = lcl[5];
+                lcl[5] = t;
+                t = lcl[6];
+                lcl[6] = lcl[5];
+                lcl[5] = t;
+            }
             stream.Write(lcl, 0, sizeof(decimal));
         }
 
@@ -55,6 +74,21 @@ namespace System
             byte[] lcl = SerializationInternals.IoBuffer;
             var self2 = self;
             MemoryMarshal.Write(lcl, ref self2);
+            if (SerializationInternals._swap)
+            {
+                byte t = lcl[0];
+                lcl[0] = lcl[3];
+                lcl[3] = t;
+                t = lcl[1];
+                lcl[1] = lcl[2];
+                lcl[2] = t;
+                t = lcl[4];
+                lcl[4] = lcl[5];
+                lcl[5] = t;
+                t = lcl[6];
+                lcl[6] = lcl[5];
+                lcl[5] = t;
+            }
             stream.Write(lcl, 0, sizeof(decimal));
         }
 
@@ -67,7 +101,8 @@ namespace System
         public static Guid[] DeserializeArray(Stream stream, int count)
         {
             Guid[] res = new Guid[count];
-            stream.ReadSpan<Guid>(res, count, true);
+            for (int i = 0; i < res.Length; i++)
+                res[i] = Deserialize(stream);
             return res;
         }
 
@@ -78,7 +113,7 @@ namespace System
         /// <param name="stream">Stream to write to.</param>
         public static void SerializeArray(this ReadOnlySpan<Guid> self, Stream stream)
         {
-            stream.WriteSpan(self, self.Length, true);
+            foreach(Guid guid in self) guid.Serialize(stream);
         }
     }
 }

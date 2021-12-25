@@ -38,7 +38,7 @@ public static class boolSerialization
     public static void Serialize(bool self, Stream stream)
     {
         byte[] lcl = SerializationInternals.IoBuffer;
-        lcl[0] = self ? 1 : 0;
+        lcl[0] = self ? (byte)1 : (byte)0;
         stream.Write(lcl, 0, sizeof(byte));
     }
 
@@ -51,7 +51,7 @@ public static class boolSerialization
     public static void Serialize(this in bool self, Stream stream)
     {
         byte[] lcl = SerializationInternals.IoBuffer;
-        lcl[0] = self ? 1 : 0;
+        lcl[0] = self ? (byte)1 : (byte)0;
         stream.Write(lcl, 0, sizeof(byte));
     }
 

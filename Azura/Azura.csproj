@@ -3,23 +3,23 @@
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;net5.0</TargetFrameworks>
     <Nullable>enable</Nullable>
-    <LangVersion>9</LangVersion>
+    <LangVersion>10</LangVersion>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <PropertyGroup>
-    <PackageVersion>0.7.2</PackageVersion>
+    <PackageVersion>0.8.0</PackageVersion>
     <AssemblyVersion>1.0.0</AssemblyVersion>
 
     <Description>Serializers for common types and serialization attribute</Description>
 
-    <Owners>Lucina</Owners>
-    <Authors>Lucina</Authors>
-    <Company>teamRokuro</Company>
-    <Copyright>Copyright ©2020 teamRokuro</Copyright>
-    <PackageProjectUrl>https://github.com/Lucina/Azura</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/Lucina/Azura</RepositoryUrl>
+    <Owners>riina</Owners>
+    <Authors>riina</Authors>
+    <Company>Cyriaca</Company>
+    <Copyright>Copyright ©2021 Cyriaca</Copyright>
+    <PackageProjectUrl>https://github.com/cyriaca/Azura</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/cyriaca/Azura</RepositoryUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
 
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>

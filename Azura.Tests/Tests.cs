@@ -42,6 +42,14 @@ namespace Azura.Tests
             Assert.AreEqual(_ms.Length, _ms.Position);
             _ms.SetLength(0);
 
+            // Class (file-scoped namespace)
+            var tcfsn = new TestFileScopedNamespace {IntValue = 4, StringValue = "Sextant"};
+            tcfsn.Serialize(_ms);
+            _ms.Position = 0;
+            Assert.AreEqual(tcfsn, TestFileScopedNamespaceSerialization.Deserialize(_ms));
+            Assert.AreEqual(_ms.Length, _ms.Position);
+            _ms.SetLength(0);
+
             // Record
             var tr = new TestRecord
             {
@@ -56,6 +64,23 @@ namespace Azura.Tests
             tr.Serialize(_ms);
             _ms.Position = 0;
             Assert.AreEqual(tr, TestRecordSerialization.Deserialize(_ms));
+            Assert.AreEqual(_ms.Length, _ms.Position);
+            _ms.SetLength(0);
+
+            // Record struct
+            var trs = new TestRecordStruct
+            {
+                ByteValue = 8,
+                UintValue = 0x69,
+                UintPleaseRefValue = 10,
+                StructPleaseRefValue = new TestStruct {Guid = Guid.NewGuid()},
+                EnumValue = TestRecordStruct.TestEnum.B,
+                EnumValue2 = TestRecordStruct.TestEnum.C,
+                EnumValue3 = TestRecordStruct.TestEnum.B
+            };
+            trs.Serialize(_ms);
+            _ms.Position = 0;
+            Assert.AreEqual(trs, TestRecordStructSerialization.Deserialize(_ms));
             Assert.AreEqual(_ms.Length, _ms.Position);
             _ms.SetLength(0);
 
@@ -75,6 +100,25 @@ namespace Azura.Tests
             Assert.AreEqual(_ms.Length, _ms.Position);
             _ms.Position = 0;
             Assert.AreEqual(tr2, new TestPartialRecord(new AzuraContext(_ms)));
+            Assert.AreEqual(_ms.Length, _ms.Position);
+            _ms.SetLength(0);
+
+            // Record struct (partial)
+            var trs2 = new TestPartialRecordStruct
+            {
+                ByteValue = 8,
+                UintValue = 0x69,
+                UintPleaseRefValue = 10,
+                StructPleaseRefValue = new TestStruct {Guid = Guid.NewGuid()},
+                EnumValue = TestPartialRecordStruct.TestEnum.B,
+                EnumValue2 = TestPartialRecordStruct.TestEnum.C
+            };
+            trs2.Serialize(_ms);
+            _ms.Position = 0;
+            Assert.AreEqual(trs2, TestPartialRecordStructSerialization.Deserialize(_ms));
+            Assert.AreEqual(_ms.Length, _ms.Position);
+            _ms.Position = 0;
+            Assert.AreEqual(trs2, new TestPartialRecordStruct(new AzuraContext(_ms)));
             Assert.AreEqual(_ms.Length, _ms.Position);
             _ms.SetLength(0);
 

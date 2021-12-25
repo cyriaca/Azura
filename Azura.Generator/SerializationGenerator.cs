@@ -332,11 +332,12 @@ namespace {namespaceName}
                 context.AddSource($"{name}Serialization.cs", sbMain.ToString());
                 if (refConstructor)
                 {
-                    string type = item.Type switch
+                    string type = item.Type.Kind() switch
                     {
-                        ClassDeclarationSyntax => "class",
-                        StructDeclarationSyntax => "struct",
-                        RecordDeclarationSyntax => "record",
+                        SyntaxKind.ClassDeclaration => "class",
+                        SyntaxKind.StructDeclaration => "struct",
+                        SyntaxKind.RecordDeclaration => "record",
+                        SyntaxKind.RecordStructDeclaration => "record struct",
                         _ => throw new ArgumentOutOfRangeException()
                     };
                     var sbRef = new StringBuilder(@$"
