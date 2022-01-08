@@ -351,7 +351,7 @@ namespace Azura.Generator
                 var sbMain = new StringBuilder(@$"
 #pragma warning disable 1591
 #nullable enable
-using ${nameof(Azura)};
+using {nameof(Azura)};
 using System;
 using System.IO;
 using System.Runtime.CompilerServices;");
@@ -422,7 +422,7 @@ namespace {namespaceName}
                     var sbRef = new StringBuilder(@$"
 #pragma warning disable 1591
 #nullable enable
-using ${nameof(Azura)};
+using {nameof(Azura)};
 using System;
 using System.IO;");
                     if (namespaceName != null)
