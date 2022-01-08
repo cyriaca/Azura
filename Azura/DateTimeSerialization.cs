@@ -9,12 +9,12 @@ using System.Runtime.InteropServices;
 namespace System
 {
     /// <summary>
-    /// Provides serialization for datetimes.
+    /// Provides serialization for <see cref="DateTime"/>s.
     /// </summary>
     public static class DateTimeSerialization
     {
         /// <summary>
-        /// Deserializes a datetime.
+        /// Deserializes a <see cref="DateTime"/>.
         /// </summary>
         /// <param name="stream">Stream to read from.</param>
         /// <returns>Value.</returns>
@@ -23,7 +23,7 @@ namespace System
         {
             if (SerializationInternals._swap)
             {
-                long value = BinaryPrimitives.ReverseEndianness(MemoryMarshal.Read<long>(stream.ReadBase64()));
+                ulong value = BinaryPrimitives.ReverseEndianness(MemoryMarshal.Read<ulong>(stream.ReadBase64()));
                 return *(DateTime*)&value;
             }
 
@@ -31,7 +31,7 @@ namespace System
         }
 
         /// <summary>
-        /// Deserializes a datetime.
+        /// Deserializes a <see cref="DateTime"/>.
         /// </summary>
         /// <param name="stream">Stream to read from.</param>
         /// <param name="self">Value.</param>
@@ -39,38 +39,38 @@ namespace System
         public static void Deserialize(Stream stream, out DateTime self) => self = Deserialize(stream);
 
         /// <summary>
-        /// Serializes a datetime.
+        /// Serializes a <see cref="DateTime"/>.
         /// </summary>
         /// <param name="self">Value.</param>
         /// <param name="stream">Stream to write to.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe void Serialize(DateTime self, Stream stream)
         {
-            long value = *(long*)&self;
+            ulong value = *(ulong*)&self;
             if (SerializationInternals._swap) value = BinaryPrimitives.ReverseEndianness(value);
             byte[] lcl = SerializationInternals.IoBuffer;
             MemoryMarshal.Write(lcl, ref value);
-            stream.Write(lcl, 0, sizeof(long));
+            stream.Write(lcl, 0, sizeof(ulong));
         }
 
         /// <summary>
-        /// Serializes a datetime.
+        /// Serializes a <see cref="DateTime"/>.
         /// </summary>
         /// <param name="self">Value.</param>
         /// <param name="stream">Stream to write to.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe void Serialize(this in DateTime self, Stream stream)
         {
-            long value;
-            fixed (void* p = &self) value = *(long*)p;
+            ulong value;
+            fixed (void* p = &self) value = *(ulong*)p;
             if (SerializationInternals._swap) value = BinaryPrimitives.ReverseEndianness(value);
             byte[] lcl = SerializationInternals.IoBuffer;
             MemoryMarshal.Write(lcl, ref value);
-            stream.Write(lcl, 0, sizeof(long));
+            stream.Write(lcl, 0, sizeof(ulong));
         }
 
         /// <summary>
-        /// Deserializes an array of datetimes.
+        /// Deserializes an array of <see cref="DateTime"/>s.
         /// </summary>
         /// <param name="stream">Stream to read from.</param>
         /// <param name="count">Element count.</param>
@@ -83,7 +83,7 @@ namespace System
         }
 
         /// <summary>
-        /// Serializes an array of datetimes.
+        /// Serializes an array of <see cref="DateTime"/>s.
         /// </summary>
         /// <param name="self">Value.</param>
         /// <param name="stream">Stream to write to.</param>
