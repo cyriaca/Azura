@@ -1,48 +1,47 @@
 using System;
 
-namespace Azura.TestBase
+namespace Azura.TestBase;
+
+[Azura]
+public class TestFileScopedNamespace : IEquatable<TestFileScopedNamespace>
 {
-    [Azura]
-    public class TestFileScopedNamespace : IEquatable<TestFileScopedNamespace>
+    [Azura] public int IntValue { get; init; }
+    [Azura] public string? StringValue { get; init; }
+
+    public bool Equals(TestFileScopedNamespace? other)
     {
-        [Azura] public int IntValue { get; init; }
-        [Azura] public string? StringValue { get; init; }
-
-        public bool Equals(TestFileScopedNamespace? other)
+        if (ReferenceEquals(null, other))
         {
-            if (ReferenceEquals(null, other))
-            {
-                return false;
-            }
-
-            if (ReferenceEquals(this, other))
-            {
-                return true;
-            }
-
-            return IntValue == other.IntValue && StringValue == other.StringValue;
+            return false;
         }
 
-        public override bool Equals(object? obj)
+        if (ReferenceEquals(this, other))
         {
-            if (ReferenceEquals(null, obj))
-            {
-                return false;
-            }
-
-            if (ReferenceEquals(this, obj))
-            {
-                return true;
-            }
-
-            if (obj.GetType() != this.GetType())
-            {
-                return false;
-            }
-
-            return Equals((TestClass)obj);
+            return true;
         }
 
-        public override int GetHashCode() => HashCode.Combine(IntValue, StringValue);
+        return IntValue == other.IntValue && StringValue == other.StringValue;
     }
+
+    public override bool Equals(object? obj)
+    {
+        if (ReferenceEquals(null, obj))
+        {
+            return false;
+        }
+
+        if (ReferenceEquals(this, obj))
+        {
+            return true;
+        }
+
+        if (obj.GetType() != this.GetType())
+        {
+            return false;
+        }
+
+        return Equals((TestClass)obj);
+    }
+
+    public override int GetHashCode() => HashCode.Combine(IntValue, StringValue);
 }
