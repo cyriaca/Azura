@@ -13,13 +13,12 @@ namespace Azura.Tests
         [SetUp]
         public void Setup()
         {
+            _ms.SetLength(0);
         }
 
         [Test]
         public void TestSerialization()
         {
-            _ms.SetLength(0);
-
             // Basic
             int tInt = 194301;
             tInt.Serialize(_ms);
@@ -32,24 +31,33 @@ namespace Azura.Tests
             _ms.Position = 0;
             Assert.AreEqual(tStr, stringSerialization.Deserialize(_ms));
             Assert.AreEqual(_ms.Length, _ms.Position);
-            _ms.SetLength(0);
+        }
 
+        [Test]
+        public void TestSerializationClass()
+        {
             // Class
             var tc = new TestClass {IntValue = 4, StringValue = "Sextant"};
             tc.Serialize(_ms);
             _ms.Position = 0;
             Assert.AreEqual(tc, TestClassSerialization.Deserialize(_ms));
             Assert.AreEqual(_ms.Length, _ms.Position);
-            _ms.SetLength(0);
+        }
 
+        [Test]
+        public void TestSerializationFileScopedNamespace()
+        {
             // Class (file-scoped namespace)
             var tcfsn = new TestFileScopedNamespace {IntValue = 4, StringValue = "Sextant"};
             tcfsn.Serialize(_ms);
             _ms.Position = 0;
             Assert.AreEqual(tcfsn, TestFileScopedNamespaceSerialization.Deserialize(_ms));
             Assert.AreEqual(_ms.Length, _ms.Position);
-            _ms.SetLength(0);
+        }
 
+        [Test]
+        public void TestSerializationRecord()
+        {
             // Record
             var tr = new TestRecord
             {
@@ -65,8 +73,11 @@ namespace Azura.Tests
             _ms.Position = 0;
             Assert.AreEqual(tr, TestRecordSerialization.Deserialize(_ms));
             Assert.AreEqual(_ms.Length, _ms.Position);
-            _ms.SetLength(0);
+        }
 
+        [Test]
+        public void TestSerializationRecordStruct()
+        {
             // Record struct
             var trs = new TestRecordStruct
             {
@@ -82,8 +93,11 @@ namespace Azura.Tests
             _ms.Position = 0;
             Assert.AreEqual(trs, TestRecordStructSerialization.Deserialize(_ms));
             Assert.AreEqual(_ms.Length, _ms.Position);
-            _ms.SetLength(0);
+        }
 
+        [Test]
+        public void TestSerializationPartialRecord()
+        {
             // Record (partial)
             var tr2 = new TestPartialRecord
             {
@@ -101,8 +115,11 @@ namespace Azura.Tests
             _ms.Position = 0;
             Assert.AreEqual(tr2, new TestPartialRecord(new AzuraContext(_ms)));
             Assert.AreEqual(_ms.Length, _ms.Position);
-            _ms.SetLength(0);
+        }
 
+        [Test]
+        public void TestSerializationPartialRecordStruct()
+        {
             // Record struct (partial)
             var trs2 = new TestPartialRecordStruct
             {
@@ -120,16 +137,22 @@ namespace Azura.Tests
             _ms.Position = 0;
             Assert.AreEqual(trs2, new TestPartialRecordStruct(new AzuraContext(_ms)));
             Assert.AreEqual(_ms.Length, _ms.Position);
-            _ms.SetLength(0);
+        }
 
+        [Test]
+        public void TestSerializationStruct()
+        {
             // Struct
             var ts = new TestStruct {LongValue = 1010101010101, UshortValue = 66, Guid = Guid.NewGuid()};
             ts.Serialize(_ms);
             _ms.Position = 0;
             Assert.AreEqual(ts, TestStructSerialization.Deserialize(_ms));
             Assert.AreEqual(_ms.Length, _ms.Position);
-            _ms.SetLength(0);
+        }
 
+        [Test]
+        public void TestSerializationPartialStruct()
+        {
             // Struct (partial)
             var ts2 = new TestPartialStruct {LongValue = 1010101010101, UshortValue = 66, Guid = Guid.NewGuid()};
             ts2.Serialize(_ms);
@@ -139,8 +162,11 @@ namespace Azura.Tests
             _ms.Position = 0;
             Assert.AreEqual(ts2, new TestPartialStruct(new AzuraContext(_ms)));
             Assert.AreEqual(_ms.Length, _ms.Position);
-            _ms.SetLength(0);
+        }
 
+        [Test]
+        public void TestSerializationArray()
+        {
             // Class with array
             string[] arr = {"jj", "yy"};
             TestStruct?[] arr2 = {new TestStruct {LongValue = 0}, null};
@@ -171,7 +197,6 @@ namespace Azura.Tests
             Assert.AreEqual(hs, resTa.HashSet);
             Assert.AreEqual(korone, resTa.Dictionary);
             Assert.AreEqual(migraine, resTa.Dictionary3);
-            _ms.SetLength(0);
         }
     }
 }
