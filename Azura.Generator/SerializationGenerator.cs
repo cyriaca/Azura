@@ -377,6 +377,10 @@ namespace {namespaceName}
                 isEnum = true;
                 string ek = (symbol as INamedTypeSymbol)!.EnumUnderlyingType!.ToString();
                 string gk = Guid.NewGuid().ToString().Replace('-', '_');
+                /*var sh = new SpookyHash(8388364911183553894UL, 7237116871595750767UL);
+                sh.Update(symbolText);
+                sh.Final(out Sh128 hash);
+                string gk = hash.ToString();*/
                 return ($"{name}Serialization.Deserialize_{gk}",
                     $"{name}Serialization.Serialize_{gk}",
                     @$"
