@@ -9,13 +9,13 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <PackageVersion>0.8.0</PackageVersion>
+    <PackageVersion>0.9.0</PackageVersion>
     <AssemblyVersion>1.0.0</AssemblyVersion>
 
     <Description>Serializers for common types and serialization attribute</Description>
 
-    <Owners>riina</Owners>
-    <Authors>riina</Authors>
+    <Owners>riina,lucina</Owners>
+    <Authors>riina,lucina</Authors>
     <Company>Cyriaca</Company>
     <Copyright>Copyright ©2021 Cyriaca</Copyright>
     <PackageProjectUrl>https://github.com/cyriaca/Azura</PackageProjectUrl>

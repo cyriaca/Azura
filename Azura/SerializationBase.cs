@@ -125,7 +125,7 @@ public static class SerializationBase
     #region Lists
 
     /// <summary>
-    /// Deserializes an array.
+    /// Deserializes a list.
     /// </summary>
     /// <param name="stream">Stream to read from.</param>
     /// <param name="count">Element count.</param>
@@ -139,7 +139,7 @@ public static class SerializationBase
     }
 
     /// <summary>
-    /// Serializes an array.
+    /// Serializes a list.
     /// </summary>
     /// <param name="self">Value.</param>
     /// <param name="stream">Stream to write to.</param>
@@ -154,7 +154,7 @@ public static class SerializationBase
     }
 
     /// <summary>
-    /// Deserializes an array.
+    /// Deserializes a list.
     /// </summary>
     /// <param name="stream">Stream to read from.</param>
     /// <param name="count">Element count.</param>
@@ -174,7 +174,7 @@ public static class SerializationBase
     }
 
     /// <summary>
-    /// Serializes an array.
+    /// Serializes a list.
     /// </summary>
     /// <param name="self">Value.</param>
     /// <param name="stream">Stream to write to.</param>
@@ -195,7 +195,7 @@ public static class SerializationBase
     }
 
     /// <summary>
-    /// Deserializes an array.
+    /// Deserializes a list.
     /// </summary>
     /// <param name="stream">Stream to read from.</param>
     /// <param name="count">Element count.</param>
@@ -212,7 +212,7 @@ public static class SerializationBase
     }
 
     /// <summary>
-    /// Serializes an array.
+    /// Serializes a list.
     /// </summary>
     /// <param name="self">Value.</param>
     /// <param name="stream">Stream to write to.</param>
@@ -340,10 +340,10 @@ public static class SerializationBase
 
     #endregion
 
-    #region Dictionarys
+    #region Dictionaries
 
     /// <summary>
-    /// Deserializes a hash set.
+    /// Deserializes a dictionary.
     /// </summary>
     /// <param name="stream">Stream to read from.</param>
     /// <param name="count">Element count.</param>
@@ -359,7 +359,7 @@ public static class SerializationBase
     }
 
     /// <summary>
-    /// Serializes a hash set.
+    /// Serializes a dictionary.
     /// </summary>
     /// <param name="self">Value.</param>
     /// <param name="stream">Stream to write to.</param>
@@ -378,7 +378,7 @@ public static class SerializationBase
     }
 
     /// <summary>
-    /// Deserializes a hash set.
+    /// Deserializes a dictionary.
     /// </summary>
     /// <param name="stream">Stream to read from.</param>
     /// <param name="count">Element count.</param>
@@ -400,7 +400,7 @@ public static class SerializationBase
     }
 
     /// <summary>
-    /// Serializes a hash set.
+    /// Serializes a dictionary.
     /// </summary>
     /// <param name="self">Value.</param>
     /// <param name="stream">Stream to write to.</param>
@@ -425,7 +425,7 @@ public static class SerializationBase
     }
 
     /// <summary>
-    /// Deserializes a hash set.
+    /// Deserializes a dictionary.
     /// </summary>
     /// <param name="stream">Stream to read from.</param>
     /// <param name="count">Element count.</param>
@@ -446,7 +446,7 @@ public static class SerializationBase
     }
 
     /// <summary>
-    /// Serializes a hash set.
+    /// Serializes a dictionary.
     /// </summary>
     /// <param name="self">Value.</param>
     /// <param name="stream">Stream to write to.</param>

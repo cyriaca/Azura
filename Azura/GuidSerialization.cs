@@ -8,12 +8,12 @@ using System.Runtime.InteropServices;
 namespace System
 {
     /// <summary>
-    /// Provides serialization for guids.
+    /// Provides serialization for GUIDs.
     /// </summary>
     public static class GuidSerialization
     {
         /// <summary>
-        /// Deserializes a guid.
+        /// Deserializes a GUID.
         /// </summary>
         /// <param name="stream">Stream to read from.</param>
         /// <returns>Value.</returns>
@@ -28,7 +28,7 @@ namespace System
         }
 
         /// <summary>
-        /// Deserializes a guid.
+        /// Deserializes a GUID.
         /// </summary>
         /// <param name="stream">Stream to read from.</param>
         /// <param name="self">Value.</param>
@@ -36,7 +36,7 @@ namespace System
         public static void Deserialize(Stream stream, out Guid self) => self = Deserialize(stream);
 
         /// <summary>
-        /// Serializes a guid.
+        /// Serializes a GUID.
         /// </summary>
         /// <param name="self">Value.</param>
         /// <param name="stream">Stream to write to.</param>
@@ -56,15 +56,15 @@ namespace System
                 t = lcl[4];
                 lcl[4] = lcl[5];
                 lcl[5] = t;
-                t = lcl[6];
-                lcl[6] = lcl[5];
-                lcl[5] = t;
+                t = lcl[7];
+                lcl[7] = lcl[6];
+                lcl[6] = t;
             }
             stream.Write(lcl, 0, sizeof(decimal));
         }
 
         /// <summary>
-        /// Serializes a guid.
+        /// Serializes a GUID.
         /// </summary>
         /// <param name="self">Value.</param>
         /// <param name="stream">Stream to write to.</param>
@@ -85,15 +85,15 @@ namespace System
                 t = lcl[4];
                 lcl[4] = lcl[5];
                 lcl[5] = t;
-                t = lcl[6];
-                lcl[6] = lcl[5];
-                lcl[5] = t;
+                t = lcl[7];
+                lcl[7] = lcl[6];
+                lcl[6] = t;
             }
             stream.Write(lcl, 0, sizeof(decimal));
         }
 
         /// <summary>
-        /// Deserializes an array of guids.
+        /// Deserializes an array of GUIDs.
         /// </summary>
         /// <param name="stream">Stream to read from.</param>
         /// <param name="count">Element count.</param>
@@ -107,7 +107,7 @@ namespace System
         }
 
         /// <summary>
-        /// Serializes an array of guids.
+        /// Serializes an array of GUIDs.
         /// </summary>
         /// <param name="self">Value.</param>
         /// <param name="stream">Stream to write to.</param>
